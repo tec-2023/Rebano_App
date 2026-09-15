@@ -1,0 +1,124 @@
+import 'package:flutter/material.dart';
+import '../../domain/entities/church_tenant.dart';
+import '../../data/repositories/mock_tenant_repository.dart';
+
+class TenantProvider extends ChangeNotifier {
+  final TenantRepository _repository;
+
+  ChurchTenant _currentTenant;
+  bool _isLoading = false;
+  String? _errorMessage;
+
+  TenantProvider({TenantRepository? repository})
+      : _repository = repository ?? MockTenantRepository(),
+        _currentTenant = ChurchTenant(
+          id: 'tenant-1',
+          name: 'Comunidad Gracia y Paz',
+          code: 'REB-1054',
+          pastorName: 'Pastor David Morales',
+          email: 'pastor.david@graciaypaz.org',
+          primaryColor: const Color(0xFF1E5BB8),
+          address: 'Av. Esperanza #400, Monterrey, N.L.',
+          phone: '+52 81 8300 1234',
+          createdAt: DateTime(2025, 1, 1),
+        );
+
+  ChurchTenant get currentTenant => _currentTenant;
+  Color get primaryColor => _currentTenant.primaryColor;
+  String get churchName => _currentTenant.name;
+  String get churchCode => _currentTenant.code;
+  String? get logoUrl => _currentTenant.logoUrl;
+  bool get isLoading => _isLoading;
+  String? get errorMessage => _errorMessage;
+
+  void setTenant(ChurchTenant tenant) {
+    _currentTenant = tenant;
+    notifyListeners();
+  }
+
+  Future<bool> loadTenantByCode(String code) async {
+    _isLoading = true;
+    _errorMessage = null;
+    notifyListeners();
+
+    try {
+      final tenant = await _repository.getTenantByCode(code);
+      if (tenant != null) {
+        _currentTenant = tenant;
+        _isLoading = false;
+        notifyListeners();
+        return true;
+      } else {
+        _errorMessage = 'Código de iglesia no encontrado. Verifica con tu pastor.';
+        _isLoading = false;
+        notifyListeners();
+        return false;
+      }
+    } catch (e) {
+      _errorMessage = 'Error de conexión: ${e.toString()}';
+      _isLoading = false;
+      notifyListeners();
+      return false;
+    }
+  }
+
+  Future<ChurchTenant?> registerChurch({
+    required String name,
+    required String pastorName,
+    required String email,
+    required Color primaryColor,
+  }) async {
+    _isLoading = true;
+    _errorMessage = null;
+    notifyListeners();
+
+    try {
+      final newChurch = await _repository.registerChurch(
+        name: name,
+        pastorName: pastorName,
+        email: email,
+        primaryColor: primaryColor,
+      );
+      _currentTenant = newChurch;
+      _isLoading = false;
+      notifyListeners();
+      return newChurch;
+    } catch (e) {
+      _errorMessage = 'Error al registrar la congregación: $e';
+      _isLoading = false;
+      notifyListeners();
+      return null;
+    }
+  }
+
+  Future<bool> updateCustomization({
+    required String name,
+    required Color primaryColor,
+    String? logoUrl,
+  }) async {
+    _isLoading = true;
+    notifyListeners();
+
+    try {
+      await _repository.updateChurchCustomization(
+        tenantId: _currentTenant.id,
+        name: name,
+        primaryColor: primaryColor,
+        logoUrl: logoUrl,
+      );
+      _currentTenant = _currentTenant.copyWith(
+        name: name,
+        primaryColor: primaryColor,
+        logoUrl: logoUrl,
+      );
+      _isLoading = false;
+      notifyListeners();
+      return true;
+    } catch (e) {
+      _errorMessage = 'Error al actualizar personalización: $e';
+      _isLoading = false;
+      notifyListeners();
+      return false;
+    }
+  }
+}
