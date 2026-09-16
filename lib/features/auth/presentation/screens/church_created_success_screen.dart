@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:share_plus/share_plus.dart';
 import '../../../../core/widgets/app_button.dart';
+import '../../../../core/widgets/app_logo.dart';
 import '../../../../core/widgets/custom_card.dart';
 import '../../../tenant/domain/entities/church_tenant.dart';
 import '../../../navigation/main_navigation_shell.dart';
@@ -47,23 +48,13 @@ class ChurchCreatedSuccessScreen extends StatelessWidget {
             children: [
               const Spacer(),
 
-              // Badge de éxito
+              // Badge de éxito con logotipo
               Center(
-                child: Container(
-                  width: 90,
-                  height: 90,
-                  decoration: BoxDecoration(
-                    color: const Color(0xFFDCFCE7),
-                    shape: BoxShape.circle,
-                    border: Border.all(color: const Color(0xFF86EFAC), width: 2),
-                  ),
-                  child: const Center(
-                    child: Icon(
-                      Icons.celebration_rounded,
-                      size: 46,
-                      color: Color(0xFF15803D),
-                    ),
-                  ),
+                child: AppLogo(
+                  size: 90,
+                  borderRadius: 24,
+                  padding: const EdgeInsets.all(10),
+                  border: Border.all(color: const Color(0xFF86EFAC), width: 2),
                 ),
               ),
               const SizedBox(height: 20),

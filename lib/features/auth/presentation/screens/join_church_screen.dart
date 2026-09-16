@@ -5,6 +5,9 @@ import '../../../../core/widgets/app_button.dart';
 import '../../../../core/widgets/custom_card.dart';
 import '../../../../core/widgets/custom_text_field.dart';
 import '../../../tenant/presentation/providers/tenant_provider.dart';
+import '../../../prayer_network/presentation/providers/prayer_provider.dart';
+import '../../../treasury/presentation/providers/treasury_provider.dart';
+import '../../../cells_evangelism/presentation/providers/cell_provider.dart';
 import '../providers/auth_provider.dart';
 import '../../../navigation/main_navigation_shell.dart';
 
@@ -77,6 +80,12 @@ class _JoinChurchScreenState extends State<JoinChurchScreen> {
     if (mounted) {
       setState(() => _isLoading = false);
       if (success) {
+        final churchId = tenantProvider.currentTenant.id;
+        final userId = authProvider.currentUser?.id ?? '';
+        context.read<PrayerProvider>().loadPrayers(churchId);
+        context.read<TreasuryProvider>().loadTreasuryData(churchId);
+        context.read<CellProvider>().loadCellData(churchId, userId);
+
         Navigator.of(context).pushAndRemoveUntil(
           MaterialPageRoute(builder: (_) => const MainNavigationShell()),
           (route) => false,

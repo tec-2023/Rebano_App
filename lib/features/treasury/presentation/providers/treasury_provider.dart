@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import '../../../../core/config/supabase_config.dart';
 import '../../domain/entities/financial_transaction.dart';
 import '../../data/repositories/mock_treasury_repository.dart';
+import '../../data/repositories/supabase_treasury_repository.dart';
 import '../services/export_service.dart';
 
 enum TreasuryFilter { all, income, expense }
@@ -15,7 +17,10 @@ class TreasuryProvider extends ChangeNotifier {
   String? _errorMessage;
 
   TreasuryProvider({TreasuryRepository? repository})
-      : _repository = repository ?? MockTreasuryRepository() {
+      : _repository = repository ??
+            (SupabaseConfig.isInitialized
+                ? SupabaseTreasuryRepository()
+                : MockTreasuryRepository()) {
     loadTreasuryData('tenant-1');
   }
 

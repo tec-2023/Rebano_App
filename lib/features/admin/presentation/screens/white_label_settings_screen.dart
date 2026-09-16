@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/widgets/app_button.dart';
+import '../../../../core/widgets/app_logo.dart';
 import '../../../../core/widgets/custom_card.dart';
 import '../../../../core/widgets/custom_text_field.dart';
 import '../../../tenant/presentation/providers/tenant_provider.dart';
@@ -88,29 +89,36 @@ class _WhiteLabelSettingsScreenState extends State<WhiteLabelSettingsScreen> {
                 ),
                 const SizedBox(height: 6),
                 Text(
-                  'Personaliza los colores, nombres y detalles visuales que verán todos los miembros y líderes.',
+                  'Personaliza los colores, logotipo, nombres y detalles visuales que verán todos los miembros y líderes.',
                   style: theme.textTheme.bodyMedium,
                 ),
                 const SizedBox(height: 20),
 
-                // Badge de Código de Iglesia
+                // Previsualización del Logo Oficial
                 CustomCard(
-                  padding: const EdgeInsets.all(14),
+                  padding: const EdgeInsets.all(16),
                   color: _selectedColor.withValues(alpha: 0.08),
                   border: Border.all(color: _selectedColor.withValues(alpha: 0.35)),
                   child: Row(
                     children: [
-                      Icon(Icons.vpn_key_rounded, color: _selectedColor, size: 24),
-                      const SizedBox(width: 12),
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          const Text('CÓDIGO DE IGLESIA (TENANT)', style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, letterSpacing: 0.5)),
-                          Text(
-                            currentCode,
-                            style: TextStyle(fontSize: 18, fontWeight: FontWeight.w900, color: _selectedColor),
-                          ),
-                        ],
+                      AppLogo(
+                        size: 60,
+                        borderRadius: 14,
+                        padding: const EdgeInsets.all(6),
+                        border: Border.all(color: _selectedColor.withValues(alpha: 0.4), width: 1.5),
+                      ),
+                      const SizedBox(width: 16),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const Text('LOGOTIPO OFICIAL REBAÑO', style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, letterSpacing: 0.5)),
+                            const SizedBox(height: 2),
+                            const Text('Identidad Eclesiástica Activa', style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold)),
+                            const SizedBox(height: 2),
+                            Text('Código: $currentCode', style: TextStyle(fontSize: 12.5, color: _selectedColor, fontWeight: FontWeight.w600)),
+                          ],
+                        ),
                       ),
                     ],
                   ),

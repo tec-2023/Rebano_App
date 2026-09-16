@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:latlong2/latlong.dart';
+import '../../../../core/config/supabase_config.dart';
 import '../../domain/entities/cell_group.dart';
 import '../../data/repositories/mock_cell_repository.dart';
+import '../../data/repositories/supabase_cell_repository.dart';
 
 class CellProvider extends ChangeNotifier {
   final CellRepository _repository;
@@ -12,7 +14,10 @@ class CellProvider extends ChangeNotifier {
   String? _errorMessage;
 
   CellProvider({CellRepository? repository})
-      : _repository = repository ?? MockCellRepository() {
+      : _repository = repository ??
+            (SupabaseConfig.isInitialized
+                ? SupabaseCellRepository()
+                : MockCellRepository()) {
     loadCellData('tenant-1', 'user-3');
   }
 

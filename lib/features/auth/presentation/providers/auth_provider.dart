@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
+import '../../../../core/config/supabase_config.dart';
 import '../../domain/entities/app_user.dart';
 import '../../domain/entities/user_role.dart';
 import '../../data/repositories/mock_auth_repository.dart';
+import '../../data/repositories/supabase_auth_repository.dart';
 
 class AuthProvider extends ChangeNotifier {
   final AuthRepository _repository;
@@ -12,8 +14,26 @@ class AuthProvider extends ChangeNotifier {
   String? _errorMessage;
 
   AuthProvider({AuthRepository? repository})
-      : _repository = repository ?? MockAuthRepository() {
-    // Inicializar con Pastor David Morales por defecto para facilitar pruebas completas
+      : _repository = repository ??
+            (SupabaseConfig.isInitialized
+                ? SupabaseAuthRepository()
+                : MockAuthRepository()) {
+    _initSession();
+  }
+
+  Future<void> _initSession() async {
+    final repo = _repository;
+    if (repo is SupabaseAuthRepository) {
+      final existingUser = await repo.getCurrentUser();
+      if (existingUser != null) {
+        _currentUser = existingUser;
+        await _loadChurchMembers(existingUser.churchId);
+        notifyListeners();
+        return;
+      }
+    }
+
+    // Default mock demo user if no active session
     _currentUser = AppUser(
       id: 'user-1',
       churchId: 'tenant-1',
@@ -176,7 +196,11 @@ class AuthProvider extends ChangeNotifier {
     }
   }
 
-  void logout() {
+  Future<void> logout() async {
+    final repo = _repository;
+    if (repo is SupabaseAuthRepository) {
+      await repo.signOut();
+    }
     _currentUser = null;
     notifyListeners();
   }

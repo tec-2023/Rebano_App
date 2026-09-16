@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
+import '../../core/widgets/app_logo.dart';
 import '../tenant/presentation/providers/tenant_provider.dart';
 import '../auth/domain/entities/user_role.dart';
 import '../auth/presentation/providers/auth_provider.dart';
@@ -122,7 +123,7 @@ class _MainNavigationShellState extends State<MainNavigationShell> {
       child: ListView(
         padding: EdgeInsets.zero,
         children: [
-          // 1. Header de la Iglesia y Usuario
+          // 1. Header de la Iglesia y Usuario con Logotipo Oficial
           DrawerHeader(
             decoration: BoxDecoration(
               color: tenant.primaryColor,
@@ -133,16 +134,11 @@ class _MainNavigationShellState extends State<MainNavigationShell> {
               children: [
                 Row(
                   children: [
-                    Container(
-                      width: 46,
-                      height: 46,
-                      decoration: BoxDecoration(
-                        color: Colors.white.withValues(alpha: 0.2),
-                        shape: BoxShape.circle,
-                      ),
-                      child: const Center(
-                        child: Text('🐑', style: TextStyle(fontSize: 24)),
-                      ),
+                    const AppLogo(
+                      size: 48,
+                      borderRadius: 12,
+                      padding: EdgeInsets.all(4),
+                      showShadow: false,
                     ),
                     const SizedBox(width: 12),
                     Expanded(

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'core/config/supabase_config.dart';
 import 'core/theme/app_theme.dart';
 import 'features/tenant/presentation/providers/tenant_provider.dart';
 import 'features/auth/presentation/providers/auth_provider.dart';
@@ -8,8 +9,9 @@ import 'features/cells_evangelism/presentation/providers/cell_provider.dart';
 import 'features/treasury/presentation/providers/treasury_provider.dart';
 import 'features/ota_updates/presentation/screens/splash_screen.dart';
 
-void main() {
+void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  await SupabaseConfig.initialize();
   runApp(const RebanoApp());
 }
 

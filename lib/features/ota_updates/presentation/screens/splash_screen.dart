@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import '../../../../core/widgets/app_logo.dart';
 import '../../domain/entities/app_version.dart';
 import '../controllers/ota_service.dart';
 import '../../../tenant/presentation/providers/tenant_provider.dart';
@@ -45,7 +46,6 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
     await Future.delayed(const Duration(milliseconds: 1400));
     if (!mounted) return;
 
-    // Consultamos OTA Service (puedes cambiar simulateUpdateFound a true/false)
     final updateInfo = await OtaService.checkForUpdate(simulateUpdateFound: false);
 
     if (!mounted) return;
@@ -60,7 +60,7 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
   void _showUpdateDialog(AppVersion updateInfo) {
     showDialog(
       context: context,
-      barrierDismissible: false, // Bloqueante como se especificó en el requerimiento
+      barrierDismissible: false,
       builder: (ctx) => AlertDialog(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
         title: Row(
@@ -162,26 +162,15 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                // Logo Icon / Avatar
-                Container(
-                  width: 100,
-                  height: 100,
-                  decoration: BoxDecoration(
-                    color: tenant.primaryColor.withValues(alpha: 0.12),
-                    shape: BoxShape.circle,
-                    boxShadow: [
-                      BoxShadow(
-                        color: tenant.primaryColor.withValues(alpha: 0.25),
-                        blurRadius: 24,
-                        offset: const Offset(0, 8),
-                      ),
-                    ],
-                  ),
-                  child: Center(
-                    child: Text(
-                      '🐑',
-                      style: const TextStyle(fontSize: 48),
-                    ),
+                // Logotipo oficial Rebaño
+                AppLogo(
+                  size: 110,
+                  borderRadius: 28,
+                  padding: const EdgeInsets.all(12),
+                  backgroundColor: isDark ? const Color(0xFF1E293B) : Colors.white,
+                  border: Border.all(
+                    color: tenant.primaryColor.withValues(alpha: 0.3),
+                    width: 2,
                   ),
                 ),
                 const SizedBox(height: 24),

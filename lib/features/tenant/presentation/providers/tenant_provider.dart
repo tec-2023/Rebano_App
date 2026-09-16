@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import '../../../../core/config/supabase_config.dart';
 import '../../domain/entities/church_tenant.dart';
 import '../../data/repositories/mock_tenant_repository.dart';
+import '../../data/repositories/supabase_tenant_repository.dart';
 
 class TenantProvider extends ChangeNotifier {
   final TenantRepository _repository;
@@ -10,7 +12,10 @@ class TenantProvider extends ChangeNotifier {
   String? _errorMessage;
 
   TenantProvider({TenantRepository? repository})
-      : _repository = repository ?? MockTenantRepository(),
+      : _repository = repository ??
+            (SupabaseConfig.isInitialized
+                ? SupabaseTenantRepository()
+                : MockTenantRepository()),
         _currentTenant = ChurchTenant(
           id: 'tenant-1',
           name: 'Comunidad Gracia y Paz',
@@ -28,12 +33,41 @@ class TenantProvider extends ChangeNotifier {
   String get churchName => _currentTenant.name;
   String get churchCode => _currentTenant.code;
   String? get logoUrl => _currentTenant.logoUrl;
+  String? get motto => _currentTenant.motto;
   bool get isLoading => _isLoading;
   String? get errorMessage => _errorMessage;
 
   void setTenant(ChurchTenant tenant) {
     _currentTenant = tenant;
     notifyListeners();
+  }
+
+  /// Carga la iglesia por su ID (usado en login al obtener id_iglesia del perfil)
+  Future<bool> loadTenantById(String churchId) async {
+    _isLoading = true;
+    _errorMessage = null;
+    notifyListeners();
+
+    try {
+      final repo = _repository;
+      if (repo is SupabaseTenantRepository) {
+        final tenant = await repo.getTenantById(churchId);
+        if (tenant != null) {
+          _currentTenant = tenant;
+          _isLoading = false;
+          notifyListeners();
+          return true;
+        }
+      }
+      _isLoading = false;
+      notifyListeners();
+      return false;
+    } catch (e) {
+      _errorMessage = 'Error al cargar congregación: $e';
+      _isLoading = false;
+      notifyListeners();
+      return false;
+    }
   }
 
   Future<bool> loadTenantByCode(String code) async {

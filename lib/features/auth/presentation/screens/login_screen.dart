@@ -4,6 +4,10 @@ import '../../../../core/theme/app_colors.dart';
 import '../../../../core/widgets/app_button.dart';
 import '../../../../core/widgets/custom_card.dart';
 import '../../../../core/widgets/custom_text_field.dart';
+import '../../../tenant/presentation/providers/tenant_provider.dart';
+import '../../../prayer_network/presentation/providers/prayer_provider.dart';
+import '../../../treasury/presentation/providers/treasury_provider.dart';
+import '../../../cells_evangelism/presentation/providers/cell_provider.dart';
 import '../providers/auth_provider.dart';
 import '../../../navigation/main_navigation_shell.dart';
 
@@ -41,10 +45,24 @@ class _LoginScreenState extends State<LoginScreen> {
     if (mounted) {
       setState(() => _isLoading = false);
       if (success) {
-        Navigator.of(context).pushAndRemoveUntil(
-          MaterialPageRoute(builder: (_) => const MainNavigationShell()),
-          (route) => false,
-        );
+        final currentUser = authProvider.currentUser;
+        if (currentUser != null && currentUser.churchId.isNotEmpty) {
+          final tenantProvider = context.read<TenantProvider>();
+          await tenantProvider.loadTenantById(currentUser.churchId);
+
+          if (mounted) {
+            context.read<PrayerProvider>().loadPrayers(currentUser.churchId);
+            context.read<TreasuryProvider>().loadTreasuryData(currentUser.churchId);
+            context.read<CellProvider>().loadCellData(currentUser.churchId, currentUser.id);
+          }
+        }
+
+        if (mounted) {
+          Navigator.of(context).pushAndRemoveUntil(
+            MaterialPageRoute(builder: (_) => const MainNavigationShell()),
+            (route) => false,
+          );
+        }
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(

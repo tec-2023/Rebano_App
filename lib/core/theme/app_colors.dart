@@ -92,4 +92,33 @@ class AppColors {
   static const Color roleLeader = Color(0xFF2563EB);
   static const Color roleTreasurer = Color(0xFF059669);
   static const Color roleMember = Color(0xFFD97706);
+
+  /// Convierte una cadena Hex (ej. '#1E5BB8' o '1E5BB8') a Color de Flutter
+  static Color fromHex(String? hexString, {Color fallback = const Color(0xFF1E5BB8)}) {
+    if (hexString == null || hexString.trim().isEmpty) return fallback;
+    try {
+      final buffer = StringBuffer();
+      String cleanHex = hexString.replaceFirst('#', '').trim();
+      if (cleanHex.length == 6) {
+        buffer.write('FF');
+        buffer.write(cleanHex);
+      } else if (cleanHex.length == 8) {
+        buffer.write(cleanHex);
+      } else {
+        return fallback;
+      }
+      return Color(int.parse(buffer.toString(), radix: 16));
+    } catch (_) {
+      return fallback;
+    }
+  }
+
+  /// Convierte un Color de Flutter a string hexadecimal '#RRGGBB'
+  static String toHex(Color color, {bool leadingHashSign = true}) {
+    final r = (color.r * 255.0).round().toRadixString(16).padLeft(2, '0');
+    final g = (color.g * 255.0).round().toRadixString(16).padLeft(2, '0');
+    final b = (color.b * 255.0).round().toRadixString(16).padLeft(2, '0');
+    final hex = '$r$g$b';
+    return leadingHashSign ? '#${hex.toUpperCase()}' : hex.toUpperCase();
+  }
 }

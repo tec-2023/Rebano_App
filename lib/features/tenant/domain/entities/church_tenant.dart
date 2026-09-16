@@ -10,6 +10,7 @@ class ChurchTenant {
   final String? logoUrl;
   final String address;
   final String phone;
+  final String? motto; // lema_o_vision
   final DateTime createdAt;
 
   const ChurchTenant({
@@ -20,6 +21,7 @@ class ChurchTenant {
     required this.email,
     required this.primaryColor,
     this.logoUrl,
+    this.motto,
     this.address = 'Calle Principal #123, Colonia Centro',
     this.phone = '+52 55 1234 5678',
     required this.createdAt,
@@ -33,6 +35,7 @@ class ChurchTenant {
     String? email,
     Color? primaryColor,
     String? logoUrl,
+    String? motto,
     String? address,
     String? phone,
     DateTime? createdAt,
@@ -45,6 +48,7 @@ class ChurchTenant {
       email: email ?? this.email,
       primaryColor: primaryColor ?? this.primaryColor,
       logoUrl: logoUrl ?? this.logoUrl,
+      motto: motto ?? this.motto,
       address: address ?? this.address,
       phone: phone ?? this.phone,
       createdAt: createdAt ?? this.createdAt,

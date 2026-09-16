@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../../../core/widgets/app_button.dart';
+import '../../../../core/widgets/app_logo.dart';
 import '../../../../core/widgets/custom_card.dart';
 import '../../../tenant/presentation/providers/tenant_provider.dart';
 import 'register_church_screen.dart';
@@ -25,17 +26,16 @@ class WelcomeScreen extends StatelessWidget {
             children: [
               const Spacer(flex: 1),
 
-              // Header & Logo
+              // Header & Official Logo
               Center(
-                child: Container(
-                  width: 88,
-                  height: 88,
-                  decoration: BoxDecoration(
-                    color: tenant.primaryColor.withValues(alpha: 0.12),
-                    shape: BoxShape.circle,
-                  ),
-                  child: const Center(
-                    child: Text('🐑', style: TextStyle(fontSize: 44)),
+                child: AppLogo(
+                  size: 96,
+                  borderRadius: 24,
+                  padding: const EdgeInsets.all(10),
+                  backgroundColor: isDark ? const Color(0xFF1E293B) : Colors.white,
+                  border: Border.all(
+                    color: tenant.primaryColor.withValues(alpha: 0.3),
+                    width: 1.5,
                   ),
                 ),
               ),

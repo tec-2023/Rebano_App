@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
+import '../../../../core/config/supabase_config.dart';
 import '../../domain/entities/prayer_request.dart';
 import '../../domain/entities/intercessor.dart';
 import '../../data/repositories/mock_prayer_repository.dart';
+import '../../data/repositories/supabase_prayer_repository.dart';
 
 enum PrayerFilter { all, pending, answered, praise }
 
@@ -15,7 +17,10 @@ class PrayerProvider extends ChangeNotifier {
   String? _errorMessage;
 
   PrayerProvider({PrayerRepository? repository})
-      : _repository = repository ?? MockPrayerRepository() {
+      : _repository = repository ??
+            (SupabaseConfig.isInitialized
+                ? SupabasePrayerRepository()
+                : MockPrayerRepository()) {
     loadPrayers('tenant-1');
   }
 
