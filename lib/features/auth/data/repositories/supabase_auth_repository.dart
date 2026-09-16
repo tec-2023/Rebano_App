@@ -119,7 +119,7 @@ class SupabaseAuthRepository implements AuthRepository {
     try {
       final data = await _client
           .from('perfiles')
-          .select('id, nombre_completo, roles, id_iglesia, telefono, avatar_url, created_at')
+          .select('id, nombre_completo, roles, id_iglesia')
           .eq('id', userId)
           .maybeSingle();
 
@@ -160,7 +160,7 @@ class SupabaseAuthRepository implements AuthRepository {
     try {
       final List<dynamic> response = await _client
           .from('perfiles')
-          .select('id, nombre_completo, roles, id_iglesia, telefono, avatar_url, created_at')
+          .select('id, nombre_completo, roles, id_iglesia')
           .eq('id_iglesia', churchId)
           .order('nombre_completo', ascending: true);
 
@@ -200,7 +200,7 @@ class SupabaseAuthRepository implements AuthRepository {
           .from('perfiles')
           .update({'roles': rolesKeys})
           .eq('id', userId)
-          .select('id, nombre_completo, roles, id_iglesia, telefono, avatar_url, created_at')
+          .select('id, nombre_completo, roles, id_iglesia')
           .single();
 
       return AppUser(

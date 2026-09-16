@@ -11,17 +11,32 @@ class SupabaseTenantRepository implements TenantRepository {
   @override
   Future<ChurchTenant?> getTenantByCode(String code) async {
     try {
-      final cleanCode = code.trim().toUpperCase();
-      final data = await _client
+      final clean = code.trim();
+      if (clean.isEmpty) return null;
+
+      // 1. Buscar por ID exacto de la congregación
+      var data = await _client
           .from('iglesias')
-          .select('id, nombre_completo, logo_url, color_principal, lema_o_vision, codigo, direccion, telefono, pastor_nombre, email_contacto, created_at')
-          .eq('codigo', cleanCode)
+          .select('id, nombre_completo, logo_url, color_principal, lema_o_vision')
+          .eq('id', clean)
           .maybeSingle();
+
+      // 2. Si no se encuentra por ID exacto, buscar por coincidencia en el nombre
+      if (data == null) {
+        final List<dynamic> list = await _client
+            .from('iglesias')
+            .select('id, nombre_completo, logo_url, color_principal, lema_o_vision')
+            .ilike('nombre_completo', '%$clean%')
+            .limit(1);
+        if (list.isNotEmpty) {
+          data = list.first as Map<String, dynamic>;
+        }
+      }
 
       if (data == null) return null;
       return _mapToChurchTenant(data);
     } catch (e) {
-      debugPrint('[SupabaseTenantRepository] Error al obtener iglesia por código: $e');
+      debugPrint('[SupabaseTenantRepository] Error al obtener iglesia por código/ID: $e');
       return null;
     }
   }
@@ -31,7 +46,7 @@ class SupabaseTenantRepository implements TenantRepository {
     try {
       final data = await _client
           .from('iglesias')
-          .select('id, nombre_completo, logo_url, color_principal, lema_o_vision, codigo, direccion, telefono, pastor_nombre, email_contacto, created_at')
+          .select('id, nombre_completo, logo_url, color_principal, lema_o_vision')
           .eq('id', churchId)
           .maybeSingle();
 
@@ -51,21 +66,25 @@ class SupabaseTenantRepository implements TenantRepository {
     required Color primaryColor,
   }) async {
     try {
-      // Generar código único para la congregación (ej. REB-8492)
-      final randomSuffix = (1000 + (DateTime.now().microsecondsSinceEpoch % 9000)).toString();
-      final generatedCode = 'REB-$randomSuffix';
-
       final hexColor = AppColors.toHex(primaryColor);
 
-      final data = await _client.from('iglesias').insert({
+      // Insertamos únicamente las columnas existentes en la tabla 'iglesias'
+      final insertPayload = <String, dynamic>{
         'nombre_completo': name.trim(),
-        'codigo': generatedCode,
-        'pastor_nombre': pastorName.trim(),
-        'email_contacto': email.trim(),
         'color_principal': hexColor,
-      }).select().single();
+      };
 
-      return _mapToChurchTenant(data);
+      final data = await _client
+          .from('iglesias')
+          .insert(insertPayload)
+          .select('id, nombre_completo, logo_url, color_principal, lema_o_vision')
+          .single();
+
+      final tenant = _mapToChurchTenant(data);
+      return tenant.copyWith(
+        pastorName: pastorName.trim(),
+        email: email.trim(),
+      );
     } catch (e) {
       debugPrint('[SupabaseTenantRepository] Error al registrar iglesia: $e');
       rethrow;
@@ -102,21 +121,20 @@ class SupabaseTenantRepository implements TenantRepository {
   ChurchTenant _mapToChurchTenant(Map<String, dynamic> data) {
     final hexColor = data['color_principal']?.toString();
     final primaryColor = AppColors.fromHex(hexColor, fallback: const Color(0xFF1E5BB8));
+    final id = data['id']?.toString() ?? '';
 
     return ChurchTenant(
-      id: data['id']?.toString() ?? '',
+      id: id,
       name: data['nombre_completo']?.toString() ?? 'Iglesia',
-      code: data['codigo']?.toString() ?? 'REB-1000',
-      pastorName: data['pastor_nombre']?.toString() ?? 'Pastor',
-      email: data['email_contacto']?.toString() ?? '',
+      code: id,
+      pastorName: 'Pastor',
+      email: '',
       primaryColor: primaryColor,
       logoUrl: data['logo_url']?.toString(),
       motto: data['lema_o_vision']?.toString(),
-      address: data['direccion']?.toString() ?? 'Dirección no especificada',
-      phone: data['telefono']?.toString() ?? '',
-      createdAt: data['created_at'] != null
-          ? DateTime.tryParse(data['created_at'].toString()) ?? DateTime.now()
-          : DateTime.now(),
+      address: 'Sede Principal',
+      phone: '',
+      createdAt: DateTime.now(),
     );
   }
 }
