@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
-class CustomTextField extends StatelessWidget {
+class CustomTextField extends StatefulWidget {
   final TextEditingController? controller;
   final String label;
   final String? hint;
@@ -38,12 +38,55 @@ class CustomTextField extends StatelessWidget {
   });
 
   @override
+  State<CustomTextField> createState() => _CustomTextFieldState();
+}
+
+class _CustomTextFieldState extends State<CustomTextField> {
+  late bool _obscure;
+
+  @override
+  void initState() {
+    super.initState();
+    _obscure = widget.obscureText;
+  }
+
+  @override
+  void didUpdateWidget(covariant CustomTextField oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.obscureText != widget.obscureText) {
+      _obscure = widget.obscureText;
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+
+    Widget? effectiveSuffixIcon = widget.suffixIcon;
+
+    if (widget.obscureText && widget.suffixIcon == null) {
+      effectiveSuffixIcon = IconButton(
+        icon: Icon(
+          _obscure ? Icons.visibility_outlined : Icons.visibility_off_outlined,
+          color: isDark ? Colors.grey[400] : Colors.grey[600],
+          size: 21,
+        ),
+        splashRadius: 20,
+        tooltip: _obscure ? 'Mostrar contraseña' : 'Ocultar contraseña',
+        onPressed: () {
+          setState(() {
+            _obscure = !_obscure;
+          });
+        },
+      );
+    }
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          label,
+          widget.label,
           style: const TextStyle(
             fontWeight: FontWeight.w600,
             fontSize: 14.5,
@@ -51,21 +94,21 @@ class CustomTextField extends StatelessWidget {
         ),
         const SizedBox(height: 6),
         TextFormField(
-          controller: controller,
-          obscureText: obscureText,
-          keyboardType: keyboardType,
-          validator: validator,
-          onChanged: onChanged,
-          maxLines: maxLines,
-          readOnly: readOnly,
-          onTap: onTap,
-          inputFormatters: inputFormatters,
-          textCapitalization: textCapitalization,
+          controller: widget.controller,
+          obscureText: _obscure,
+          keyboardType: widget.keyboardType,
+          validator: widget.validator,
+          onChanged: widget.onChanged,
+          maxLines: widget.maxLines,
+          readOnly: widget.readOnly,
+          onTap: widget.onTap,
+          inputFormatters: widget.inputFormatters,
+          textCapitalization: widget.textCapitalization,
           decoration: InputDecoration(
-            hintText: hint,
-            helperText: helperText,
-            prefixIcon: prefixIcon != null ? Icon(prefixIcon, size: 22) : null,
-            suffixIcon: suffixIcon,
+            hintText: widget.hint,
+            helperText: widget.helperText,
+            prefixIcon: widget.prefixIcon != null ? Icon(widget.prefixIcon, size: 22) : null,
+            suffixIcon: effectiveSuffixIcon,
           ),
         ),
       ],

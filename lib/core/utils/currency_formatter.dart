@@ -2,9 +2,9 @@ import 'package:intl/intl.dart';
 
 class CurrencyFormatter {
   static final NumberFormat _currencyFormat = NumberFormat.currency(
-    symbol: '\$',
+    symbol: 'C\$ ',
     decimalDigits: 2,
-    locale: 'es_MX',
+    locale: 'es_NI',
   );
 
   static String format(double amount) {
@@ -13,9 +13,9 @@ class CurrencyFormatter {
 
   static String formatCompact(double amount) {
     if (amount >= 1000000) {
-      return '\$${(amount / 1000000).toStringAsFixed(1)}M';
+      return 'C\$ ${(amount / 1000000).toStringAsFixed(1)}M';
     } else if (amount >= 1000) {
-      return '\$${(amount / 1000).toStringAsFixed(1)}k';
+      return 'C\$ ${(amount / 1000).toStringAsFixed(1)}k';
     }
     return format(amount);
   }

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import '../../../../core/theme/app_colors.dart';
 import '../../../../core/widgets/app_button.dart';
+import '../../../../core/widgets/app_snackbar.dart';
 import '../../../../core/widgets/custom_card.dart';
 import '../../../../core/widgets/custom_text_field.dart';
 import '../../../tenant/presentation/providers/tenant_provider.dart';
@@ -10,6 +10,7 @@ import '../../../treasury/presentation/providers/treasury_provider.dart';
 import '../../../cells_evangelism/presentation/providers/cell_provider.dart';
 import '../providers/auth_provider.dart';
 import '../../../navigation/main_navigation_shell.dart';
+import 'login_screen.dart';
 
 class JoinChurchScreen extends StatefulWidget {
   const JoinChurchScreen({super.key});
@@ -29,6 +30,7 @@ class _JoinChurchScreenState extends State<JoinChurchScreen> {
 
   bool _isCodeVerified = false;
   bool _isLoading = false;
+  bool _obscurePassword = true;
 
   @override
   void dispose() {
@@ -53,11 +55,16 @@ class _JoinChurchScreenState extends State<JoinChurchScreen> {
       });
 
       if (!success) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(tenantProvider.errorMessage ?? 'Código de iglesia no válido'),
-            backgroundColor: AppColors.error,
-          ),
+        AppAlert.showError(
+          context,
+          title: 'Código no encontrado',
+          message: tenantProvider.errorMessage ?? 'Código de iglesia no válido. Verifica con tu pastor.',
+        );
+      } else {
+        AppAlert.showSuccess(
+          context,
+          title: 'Código Válido',
+          message: '¡Congregación "${tenantProvider.currentTenant.name}" verificada con éxito!',
         );
       }
     }
@@ -86,16 +93,27 @@ class _JoinChurchScreenState extends State<JoinChurchScreen> {
         context.read<TreasuryProvider>().loadTreasuryData(churchId);
         context.read<CellProvider>().loadCellData(churchId, userId);
 
+        AppAlert.showSuccess(
+          context,
+          title: 'Registro Exitoso',
+          message: '¡Bienvenido a ${tenantProvider.currentTenant.name}!',
+        );
+
         Navigator.of(context).pushAndRemoveUntil(
           MaterialPageRoute(builder: (_) => const MainNavigationShell()),
           (route) => false,
         );
       } else {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(authProvider.errorMessage ?? 'Error al registrarse'),
-            backgroundColor: AppColors.error,
-          ),
+        AppAlert.showError(
+          context,
+          title: 'Error de Registro',
+          message: authProvider.errorMessage ?? 'No se pudo completar el registro.',
+          actionLabel: 'Iniciar Sesión',
+          onAction: () {
+            Navigator.of(context).pushReplacement(
+              MaterialPageRoute(builder: (_) => const LoginScreen()),
+            );
+          },
         );
       }
     }
@@ -291,7 +309,14 @@ class _JoinChurchScreenState extends State<JoinChurchScreen> {
                         label: 'Contraseña',
                         hint: 'Mínimo 6 caracteres',
                         prefixIcon: Icons.lock_outline,
-                        obscureText: true,
+                        obscureText: _obscurePassword,
+                        suffixIcon: IconButton(
+                          icon: Icon(
+                            _obscurePassword ? Icons.visibility_outlined : Icons.visibility_off_outlined,
+                            color: Theme.of(context).colorScheme.primary,
+                          ),
+                          onPressed: () => setState(() => _obscurePassword = !_obscurePassword),
+                        ),
                         validator: (val) {
                           if (val == null || val.length < 6) {
                             return 'La contraseña debe tener al menos 6 caracteres';
@@ -312,7 +337,36 @@ class _JoinChurchScreenState extends State<JoinChurchScreen> {
                   ),
                 ),
               ],
-              const SizedBox(height: 20),
+              const SizedBox(height: 24),
+
+              // Enlace directo para iniciar sesión si ya tiene cuenta
+              Center(
+                child: TextButton.icon(
+                  onPressed: () {
+                    Navigator.of(context).pushReplacement(
+                      MaterialPageRoute(builder: (_) => const LoginScreen()),
+                    );
+                  },
+                  icon: const Icon(Icons.login_rounded, size: 18),
+                  label: RichText(
+                    text: TextSpan(
+                      style: theme.textTheme.bodyMedium,
+                      children: [
+                        const TextSpan(text: '¿Ya eres miembro con cuenta? '),
+                        TextSpan(
+                          text: 'Inicia Sesión aquí',
+                          style: TextStyle(
+                            color: theme.colorScheme.primary,
+                            fontWeight: FontWeight.bold,
+                            decoration: TextDecoration.underline,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 24),
             ],
           ),
         ),

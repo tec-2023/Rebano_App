@@ -130,7 +130,7 @@ class _CellReportScreenState extends State<CellReportScreen> {
                 // Ofrenda recogida
                 CustomTextField(
                   controller: _offeringController,
-                  label: 'Ofrenda Recogida (\$ MXN)',
+                  label: 'Ofrenda Recogida (C\$ Córdobas)',
                   hint: '0.00',
                   prefixIcon: Icons.attach_money_rounded,
                   keyboardType: const TextInputType.numberWithOptions(decimal: true),
@@ -153,7 +153,7 @@ class _CellReportScreenState extends State<CellReportScreen> {
                   isLoading: _isSubmitting,
                   icon: Icons.send_rounded,
                 ),
-                const SizedBox(height: 20),
+                const SizedBox(height: 36),
               ],
             ),
           ),

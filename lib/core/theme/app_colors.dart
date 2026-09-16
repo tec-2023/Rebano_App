@@ -24,10 +24,10 @@ class AppColors {
       description: 'Paz, fidelidad y solemnidad',
     ),
     ChurchThemePreset(
-      name: 'Vino Litúrgico',
+      name: 'Vino de la Cena',
       primaryColor: Color(0xFF8B1E3F),
       secondaryColor: Color(0xFFC03960),
-      description: 'Pacto, devoción y reverencia',
+      description: 'Pacto de gracia, redención y reverencia',
     ),
     ChurchThemePreset(
       name: 'Verde Esperanza',

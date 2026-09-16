@@ -140,7 +140,7 @@ class _AddIncomeScreenState extends State<AddIncomeScreen> {
                 // Monto
                 CustomTextField(
                   controller: _amountController,
-                  label: 'Monto Recibido (\$ MXN)',
+                  label: 'Monto Recibido (C\$ Córdobas)',
                   hint: '0.00',
                   prefixIcon: Icons.attach_money_rounded,
                   keyboardType: const TextInputType.numberWithOptions(decimal: true),
@@ -163,7 +163,7 @@ class _AddIncomeScreenState extends State<AddIncomeScreen> {
                 ),
                 const SizedBox(height: 16),
 
-                // Fecha
+                // Fecha (Protegida contra overflow)
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -183,11 +183,14 @@ class _AddIncomeScreenState extends State<AddIncomeScreen> {
                           children: [
                             const Icon(Icons.calendar_month_outlined, size: 22, color: Colors.grey),
                             const SizedBox(width: 12),
-                            Text(
-                              DateFormatter.formatFullDate(_selectedDate),
-                              style: const TextStyle(fontSize: 14.5, fontWeight: FontWeight.w500),
+                            Expanded(
+                              child: Text(
+                                DateFormatter.formatFullDate(_selectedDate),
+                                style: const TextStyle(fontSize: 14.5, fontWeight: FontWeight.w500),
+                                overflow: TextOverflow.ellipsis,
+                              ),
                             ),
-                            const Spacer(),
+                            const SizedBox(width: 8),
                             const Icon(Icons.arrow_drop_down, color: Colors.grey),
                           ],
                         ),
@@ -220,7 +223,7 @@ class _AddIncomeScreenState extends State<AddIncomeScreen> {
                   customColor: const Color(0xFF15803D),
                   icon: Icons.check_circle_outline,
                 ),
-                const SizedBox(height: 20),
+                const SizedBox(height: 36),
               ],
             ),
           ),

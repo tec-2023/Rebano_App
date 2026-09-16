@@ -23,13 +23,13 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
   final _descriptionController = TextEditingController();
 
   final List<String> _expenseCategories = [
-    'Servicios Públicos (Luz CFE, Agua, Gas)',
+    'Servicios Básicos (Luz Disnorte/Dissur, Agua Enacal, Internet)',
     'Renta / Alquiler de Santuario',
-    'Sonido, Multimedia e Internet',
+    'Sonido, Multimedia e Instrumentos',
     'Ministerio Infantil / Escuela Dominical',
-    'Ayuda Social y Comedor Comunitario',
+    'Ayuda Fraternal a Hermanos Necesitados',
     'Mantenimiento y Aseo del Templo',
-    'Apoyo a Misioneros / Ministerios',
+    'Misiones y Evangelismo',
   ];
 
   late String _selectedCategory;
@@ -79,8 +79,12 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
   void _showImageSourceDialog() {
     showModalBottomSheet(
       context: context,
+      useSafeArea: true,
+      isScrollControlled: true,
       shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(20))),
       builder: (ctx) => SafeArea(
+        top: false,
+        bottom: true,
         child: Padding(
           padding: const EdgeInsets.all(20),
           child: Column(
@@ -203,7 +207,7 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
                 // Monto
                 CustomTextField(
                   controller: _amountController,
-                  label: 'Monto a Pagar (\$ MXN)',
+                  label: 'Monto a Pagar (C\$ Córdobas)',
                   hint: '0.00',
                   prefixIcon: Icons.attach_money_rounded,
                   keyboardType: const TextInputType.numberWithOptions(decimal: true),
@@ -220,7 +224,7 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
                 CustomTextField(
                   controller: _recipientController,
                   label: 'Proveedor / Empresa / Beneficiario',
-                  hint: 'Ej. CFE, Ferretería El Clavo, Papelería...',
+                  hint: 'Ej. Disnorte, Enacal, Librería Bíblica, Ferretería...',
                   prefixIcon: Icons.business_outlined,
                   textCapitalization: TextCapitalization.words,
                   validator: (val) {
@@ -232,7 +236,7 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
                 ),
                 const SizedBox(height: 16),
 
-                // Fecha
+                // Fecha (Protegida contra overflow)
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -252,11 +256,14 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
                           children: [
                             const Icon(Icons.calendar_month_outlined, size: 22, color: Colors.grey),
                             const SizedBox(width: 12),
-                            Text(
-                              DateFormatter.formatFullDate(_selectedDate),
-                              style: const TextStyle(fontSize: 14.5, fontWeight: FontWeight.w500),
+                            Expanded(
+                              child: Text(
+                                DateFormatter.formatFullDate(_selectedDate),
+                                style: const TextStyle(fontSize: 14.5, fontWeight: FontWeight.w500),
+                                overflow: TextOverflow.ellipsis,
+                              ),
                             ),
-                            const Spacer(),
+                            const SizedBox(width: 8),
                             const Icon(Icons.arrow_drop_down, color: Colors.grey),
                           ],
                         ),
@@ -352,7 +359,7 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
                   customColor: const Color(0xFFDC2626),
                   icon: Icons.check_circle_outline,
                 ),
-                const SizedBox(height: 20),
+                const SizedBox(height: 36),
               ],
             ),
           ),

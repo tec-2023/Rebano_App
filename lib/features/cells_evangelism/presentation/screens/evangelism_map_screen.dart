@@ -267,11 +267,10 @@ class _EvangelismMapScreenState extends State<EvangelismMapScreen> {
             ),
           ),
 
-          // 3. Panel Inferior: Calles a evangelizar e instrucciones
+          // 3. Panel Inferior: Calles a evangelizar e instrucciones (Protegido con SafeArea)
           Expanded(
             flex: 2,
             child: Container(
-              padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
                 color: isDark ? const Color(0xFF1E293B) : Colors.white,
                 borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
@@ -279,49 +278,53 @@ class _EvangelismMapScreenState extends State<EvangelismMapScreen> {
                   BoxShadow(color: Colors.black12, blurRadius: 8, offset: Offset(0, -2)),
                 ],
               ),
-              child: ListView(
-                padding: EdgeInsets.zero,
-                children: [
-                  Row(
-                    children: [
-                      Icon(Icons.format_list_bulleted_rounded, size: 20, color: tenant.primaryColor),
-                      const SizedBox(width: 8),
-                      const Text(
-                        'Calles y Manzanas a Evangelizar',
-                        style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 8),
-                  ...route.targetStreets.map((street) => Padding(
-                        padding: const EdgeInsets.symmetric(vertical: 3),
-                        child: Row(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            const Icon(Icons.check_circle_outline, size: 16, color: Color(0xFF16A34A)),
-                            const SizedBox(width: 8),
-                            Expanded(
-                              child: Text(
-                                street,
-                                style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w500),
-                              ),
-                            ),
-                          ],
+              child: SafeArea(
+                top: false,
+                bottom: true,
+                child: ListView(
+                  padding: const EdgeInsets.fromLTRB(16, 16, 16, 12),
+                  children: [
+                    Row(
+                      children: [
+                        Icon(Icons.format_list_bulleted_rounded, size: 20, color: tenant.primaryColor),
+                        const SizedBox(width: 8),
+                        const Text(
+                          'Calles y Manzanas a Evangelizar',
+                          style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
                         ),
-                      )),
-                  const SizedBox(height: 10),
-                  Container(
-                    padding: const EdgeInsets.all(10),
-                    decoration: BoxDecoration(
-                      color: const Color(0xFFFEF3C7),
-                      borderRadius: BorderRadius.circular(10),
+                      ],
                     ),
-                    child: Text(
-                      '💡 ${route.specialInstructions}',
-                      style: const TextStyle(color: Color(0xFF92400E), fontSize: 12),
+                    const SizedBox(height: 8),
+                    ...route.targetStreets.map((street) => Padding(
+                          padding: const EdgeInsets.symmetric(vertical: 3),
+                          child: Row(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              const Icon(Icons.check_circle_outline, size: 16, color: Color(0xFF16A34A)),
+                              const SizedBox(width: 8),
+                              Expanded(
+                                child: Text(
+                                  street,
+                                  style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w500),
+                                ),
+                              ),
+                            ],
+                          ),
+                        )),
+                    const SizedBox(height: 10),
+                    Container(
+                      padding: const EdgeInsets.all(10),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFFEF3C7),
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      child: Text(
+                        '💡 ${route.specialInstructions}',
+                        style: const TextStyle(color: Color(0xFF92400E), fontSize: 12),
+                      ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
             ),
           ),

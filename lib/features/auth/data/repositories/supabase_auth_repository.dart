@@ -221,6 +221,50 @@ class SupabaseAuthRepository implements AuthRepository {
     }
   }
 
+  @override
+  Future<AppUser> updateUserProfile({
+    required String userId,
+    required String name,
+    String? phone,
+    String? newPassword,
+  }) async {
+    try {
+      final updateData = <String, dynamic>{
+        'nombre_completo': name.trim(),
+      };
+      if (phone != null) {
+        updateData['telefono'] = phone.trim();
+      }
+
+      await _client
+          .from('perfiles')
+          .update(updateData)
+          .eq('id', userId);
+
+      if (newPassword != null && newPassword.trim().isNotEmpty) {
+        await _client.auth.updateUser(
+          UserAttributes(password: newPassword.trim()),
+        );
+      }
+
+      final profile = await getUserProfile(userId);
+      if (profile != null) return profile;
+
+      return AppUser(
+        id: userId,
+        churchId: '',
+        name: name,
+        email: _client.auth.currentUser?.email ?? '',
+        roles: const [UserRole.member],
+        phone: phone,
+        joinedAt: DateTime.now(),
+      );
+    } catch (e) {
+      debugPrint('[SupabaseAuthRepository] Error al actualizar perfil: $e');
+      rethrow;
+    }
+  }
+
   Future<void> signOut() async {
     try {
       await _client.auth.signOut();

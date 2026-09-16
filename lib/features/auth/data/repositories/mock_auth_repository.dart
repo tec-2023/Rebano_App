@@ -17,6 +17,12 @@ abstract class AuthRepository {
   });
   Future<List<AppUser>> getChurchMembers(String churchId);
   Future<AppUser> updateUserRoles(String userId, List<UserRole> newRoles);
+  Future<AppUser> updateUserProfile({
+    required String userId,
+    required String name,
+    String? phone,
+    String? newPassword,
+  });
 }
 
 class MockAuthRepository implements AuthRepository {
@@ -25,59 +31,59 @@ class MockAuthRepository implements AuthRepository {
       id: 'user-1',
       churchId: 'tenant-1',
       name: 'Pastor David Morales',
-      email: 'pastor@graciaypaz.org',
+      email: 'pastor@elalfarero.org',
       roles: const [UserRole.admin, UserRole.member],
-      phone: '+52 81 8000 1111',
+      phone: '+505 8888 1111',
       joinedAt: DateTime(2024, 1, 10),
     ),
     AppUser(
       id: 'user-2',
       churchId: 'tenant-1',
       name: 'Carlos Mendoza',
-      email: 'carlos.tesorero@graciaypaz.org',
+      email: 'carlos.tesorero@elalfarero.org',
       roles: const [UserRole.treasurer, UserRole.cellLeader, UserRole.member],
       cellGroupId: 'cell-1',
-      phone: '+52 81 8000 2222',
+      phone: '+505 8888 2222',
       joinedAt: DateTime(2024, 2, 15),
     ),
     AppUser(
       id: 'user-3',
       churchId: 'tenant-1',
       name: 'María Fernanda Ríos',
-      email: 'maria.lider@graciaypaz.org',
+      email: 'maria.lider@elalfarero.org',
       roles: const [UserRole.cellLeader, UserRole.member],
       cellGroupId: 'cell-1',
-      phone: '+52 81 8000 3333',
+      phone: '+505 8888 3333',
       joinedAt: DateTime(2024, 3, 20),
     ),
     AppUser(
       id: 'user-4',
       churchId: 'tenant-1',
       name: 'Juan Silva',
-      email: 'juan.miembro@graciaypaz.org',
+      email: 'juan.miembro@elalfarero.org',
       roles: const [UserRole.member],
       cellGroupId: 'cell-1',
-      phone: '+52 81 8000 4444',
+      phone: '+505 8888 4444',
       joinedAt: DateTime(2024, 5, 5),
     ),
     AppUser(
       id: 'user-5',
       churchId: 'tenant-1',
       name: 'Lucía Benítez',
-      email: 'lucia.b@graciaypaz.org',
+      email: 'lucia.b@elalfarero.org',
       roles: const [UserRole.member],
       cellGroupId: 'cell-1',
-      phone: '+52 81 8000 5555',
+      phone: '+505 8888 5555',
       joinedAt: DateTime(2024, 6, 12),
     ),
     AppUser(
       id: 'user-6',
       churchId: 'tenant-1',
       name: 'Roberto Gómez',
-      email: 'roberto.g@graciaypaz.org',
+      email: 'roberto.g@elalfarero.org',
       roles: const [UserRole.member],
       cellGroupId: 'cell-1',
-      phone: '+52 81 8000 6666',
+      phone: '+505 8888 6666',
       joinedAt: DateTime(2024, 7, 01),
     ),
   ];
@@ -160,6 +166,26 @@ class MockAuthRepository implements AuthRepository {
         finalRoles.add(UserRole.member);
       }
       final updated = _users[index].copyWith(roles: finalRoles);
+      _users[index] = updated;
+      return updated;
+    }
+    throw Exception('Usuario no encontrado');
+  }
+
+  @override
+  Future<AppUser> updateUserProfile({
+    required String userId,
+    required String name,
+    String? phone,
+    String? newPassword,
+  }) async {
+    await Future.delayed(const Duration(milliseconds: 300));
+    final index = _users.indexWhere((u) => u.id == userId);
+    if (index != -1) {
+      final updated = _users[index].copyWith(
+        name: name,
+        phone: phone,
+      );
       _users[index] = updated;
       return updated;
     }

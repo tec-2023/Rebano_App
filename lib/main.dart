@@ -9,8 +9,22 @@ import 'features/cells_evangelism/presentation/providers/cell_provider.dart';
 import 'features/treasury/presentation/providers/treasury_provider.dart';
 import 'features/ota_updates/presentation/screens/splash_screen.dart';
 
+import 'package:flutter/services.dart';
+
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  
+  // Configuración de la barra del sistema Android para que se integre perfectamente
+  SystemChrome.setSystemUIOverlayStyle(
+    const SystemUiOverlayStyle(
+      statusBarColor: Colors.transparent,
+      statusBarIconBrightness: Brightness.dark,
+      systemNavigationBarColor: Colors.transparent,
+      systemNavigationBarDividerColor: Colors.transparent,
+      systemNavigationBarIconBrightness: Brightness.dark,
+    ),
+  );
+
   await SupabaseConfig.initialize();
   runApp(const RebanoApp());
 }

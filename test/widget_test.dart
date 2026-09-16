@@ -6,6 +6,8 @@ import 'package:rebano_app/features/auth/domain/entities/user_role.dart';
 import 'package:rebano_app/features/ota_updates/domain/entities/app_version.dart';
 import 'package:rebano_app/features/prayer_network/domain/entities/prayer_request.dart';
 import 'package:rebano_app/features/treasury/domain/entities/financial_transaction.dart';
+import 'package:rebano_app/features/tenant/domain/entities/church_tenant.dart';
+import 'package:rebano_app/features/tenant/data/repositories/supabase_tenant_repository.dart';
 import 'package:rebano_app/main.dart';
 
 void main() {
@@ -94,6 +96,34 @@ void main() {
         releaseNotes: 'Up to date',
       );
       expect(versionUpToDate.hasUpdate, isFalse);
+    });
+
+    test('Church access code generates initials + DDMMYY date format', () {
+      final code = SupabaseTenantRepository.generateChurchCode(
+        'Iglesia Bautista fundamental independiente El Alfarero',
+        DateTime(2026, 9, 15),
+      );
+      expect(code, equals('IBFIEA-150926'));
+    });
+
+    test('ChurchTenant supports both full official name and short name', () {
+      final church = ChurchTenant(
+        id: 't-test',
+        name: 'Iglesia Bautista Fundamental Independiente El Alfarero',
+        shortName: 'El Alfarero',
+        code: 'IBFIEA-150926',
+        pastorName: 'Pastor David Morales',
+        email: 'pastor@elalfarero.org',
+        primaryColor: const Color(0xFF1E5BB8),
+        createdAt: DateTime(2025, 1, 1),
+      );
+      expect(church.name, equals('Iglesia Bautista Fundamental Independiente El Alfarero'));
+      expect(church.shortName, equals('El Alfarero'));
+      expect(church.displayName, equals('El Alfarero'));
+
+      // When short name is empty, fallback to full name
+      final churchFallback = church.copyWith(shortName: '');
+      expect(churchFallback.displayName, equals('Iglesia Bautista Fundamental Independiente El Alfarero'));
     });
   });
 }

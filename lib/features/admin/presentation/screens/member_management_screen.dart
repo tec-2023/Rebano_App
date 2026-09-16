@@ -14,13 +14,17 @@ class MemberManagementScreen extends StatelessWidget {
 
     showModalBottomSheet(
       context: context,
+      useSafeArea: true,
       isScrollControlled: true,
       shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(24))),
       builder: (ctx) => StatefulBuilder(
         builder: (context, setModalState) {
-          return Padding(
-            padding: const EdgeInsets.all(24),
-            child: Column(
+          return SafeArea(
+            top: false,
+            bottom: true,
+            child: Padding(
+              padding: const EdgeInsets.all(24),
+              child: Column(
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -152,7 +156,8 @@ class MemberManagementScreen extends StatelessWidget {
                 const SizedBox(height: 10),
               ],
             ),
-          );
+          ),
+        );
         },
       ),
     );
@@ -278,7 +283,7 @@ class MemberManagementScreen extends StatelessWidget {
                   ],
                 ),
               )),
-          const SizedBox(height: 20),
+          const SizedBox(height: 48),
         ],
       ),
     );

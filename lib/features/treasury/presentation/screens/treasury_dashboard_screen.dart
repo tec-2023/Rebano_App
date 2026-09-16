@@ -16,105 +16,111 @@ class TreasuryDashboardScreen extends StatelessWidget {
   void _showTransactionDetails(BuildContext context, FinancialTransaction tx) {
     showModalBottomSheet(
       context: context,
+      useSafeArea: true,
+      isScrollControlled: true,
       shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(24))),
-      builder: (ctx) => Padding(
-        padding: const EdgeInsets.all(24),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              children: [
-                Container(
-                  padding: const EdgeInsets.all(10),
-                  decoration: BoxDecoration(
-                    color: tx.type == TransactionType.income
-                        ? const Color(0xFFDCFCE7)
-                        : const Color(0xFFFEE2E2),
-                    shape: BoxShape.circle,
+      builder: (ctx) => SafeArea(
+        top: false,
+        bottom: true,
+        child: Padding(
+          padding: const EdgeInsets.all(24),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(10),
+                    decoration: BoxDecoration(
+                      color: tx.type == TransactionType.income
+                          ? const Color(0xFFDCFCE7)
+                          : const Color(0xFFFEE2E2),
+                      shape: BoxShape.circle,
+                    ),
+                    child: Icon(
+                      tx.type == TransactionType.income
+                          ? Icons.arrow_downward_rounded
+                          : Icons.arrow_upward_rounded,
+                      color: tx.type == TransactionType.income
+                          ? const Color(0xFF15803D)
+                          : const Color(0xFFB91C1C),
+                      size: 24,
+                    ),
                   ),
-                  child: Icon(
-                    tx.type == TransactionType.income
-                        ? Icons.arrow_downward_rounded
-                        : Icons.arrow_upward_rounded,
-                    color: tx.type == TransactionType.income
-                        ? const Color(0xFF15803D)
-                        : const Color(0xFFB91C1C),
-                    size: 24,
+                  const SizedBox(width: 14),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          tx.category,
+                          style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 17),
+                        ),
+                        Text(
+                          DateFormatter.formatFullDate(tx.date),
+                          style: const TextStyle(fontSize: 12.5, color: Colors.grey),
+                        ),
+                      ],
+                    ),
                   ),
+                  Text(
+                    '${tx.type.sign}${CurrencyFormatter.format(tx.amount)}',
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 18,
+                      color: tx.type == TransactionType.income
+                          ? const Color(0xFF15803D)
+                          : const Color(0xFFB91C1C),
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 18),
+              const Divider(),
+              const SizedBox(height: 12),
+
+              _buildDetailRow('Descripción:', tx.description),
+              if (tx.donorOrRecipient != null)
+                _buildDetailRow(
+                  tx.type == TransactionType.income ? 'Donante / Fuente:' : 'Beneficiario / Proveedor:',
+                  tx.donorOrRecipient!,
                 ),
-                const SizedBox(width: 14),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
+              _buildDetailRow('Registrado por:', tx.registeredBy),
+
+              const SizedBox(height: 14),
+
+              // Respaldo digital (Recibo)
+              if (tx.hasReceipt) ...[
+                Container(
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFF1F5F9),
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(color: const Color(0xFFCBD5E1)),
+                  ),
+                  child: const Row(
                     children: [
-                      Text(
-                        tx.category,
-                        style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 17),
+                      Icon(Icons.receipt_long_rounded, color: Color(0xFF0F172A), size: 24),
+                      SizedBox(width: 12),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text('Comprobante Digital Resguardado', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13)),
+                            Text('Foto de factura física guardada en el expediente', style: TextStyle(fontSize: 11.5, color: Colors.grey)),
+                          ],
+                        ),
                       ),
-                      Text(
-                        DateFormatter.formatFullDate(tx.date),
-                        style: const TextStyle(fontSize: 12.5, color: Colors.grey),
-                      ),
+                      Icon(Icons.check_circle_rounded, color: Color(0xFF15803D), size: 20),
                     ],
                   ),
                 ),
-                Text(
-                  '${tx.type.sign}${CurrencyFormatter.format(tx.amount)}',
-                  style: TextStyle(
-                    fontWeight: FontWeight.bold,
-                    fontSize: 18,
-                    color: tx.type == TransactionType.income
-                        ? const Color(0xFF15803D)
-                        : const Color(0xFFB91C1C),
-                  ),
-                ),
               ],
-            ),
-            const SizedBox(height: 18),
-            const Divider(),
-            const SizedBox(height: 12),
 
-            _buildDetailRow('Descripción:', tx.description),
-            if (tx.donorOrRecipient != null)
-              _buildDetailRow(
-                tx.type == TransactionType.income ? 'Donante / Fuente:' : 'Beneficiario / Proveedor:',
-                tx.donorOrRecipient!,
-              ),
-            _buildDetailRow('Registrado por:', tx.registeredBy),
-
-            const SizedBox(height: 14),
-
-            // Respaldo digital (Recibo)
-            if (tx.hasReceipt) ...[
-              Container(
-                padding: const EdgeInsets.all(12),
-                decoration: BoxDecoration(
-                  color: const Color(0xFFF1F5F9),
-                  borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: const Color(0xFFCBD5E1)),
-                ),
-                child: const Row(
-                  children: [
-                    Icon(Icons.receipt_long_rounded, color: Color(0xFF0F172A), size: 24),
-                    SizedBox(width: 12),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text('Comprobante Digital Resguardado', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13)),
-                          Text('Foto de factura física guardada en el expediente', style: TextStyle(fontSize: 11.5, color: Colors.grey)),
-                        ],
-                      ),
-                    ),
-                    Icon(Icons.check_circle_rounded, color: Color(0xFF15803D), size: 20),
-                  ],
-                ),
-              ),
+              const SizedBox(height: 16),
             ],
-
-            const SizedBox(height: 16),
-          ],
+          ),
         ),
       ),
     );
@@ -372,26 +378,30 @@ class TreasuryDashboardScreen extends StatelessWidget {
 
           const SizedBox(height: 20),
 
-          // 4. Filtros de Transacciones
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          // 4. Filtros de Transacciones (Protegido contra overflow)
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
                 'Historial de Movimientos',
                 style: theme.textTheme.titleMedium,
               ),
-              Row(
-                children: [
-                  _buildSmallFilterChip(context, 'Todos', TreasuryFilter.all),
-                  const SizedBox(width: 6),
-                  _buildSmallFilterChip(context, 'Ingresos', TreasuryFilter.income),
-                  const SizedBox(width: 6),
-                  _buildSmallFilterChip(context, 'Egresos', TreasuryFilter.expense),
-                ],
+              const SizedBox(height: 8),
+              SingleChildScrollView(
+                scrollDirection: Axis.horizontal,
+                child: Row(
+                  children: [
+                    _buildSmallFilterChip(context, 'Todos', TreasuryFilter.all),
+                    const SizedBox(width: 8),
+                    _buildSmallFilterChip(context, 'Ingresos', TreasuryFilter.income),
+                    const SizedBox(width: 8),
+                    _buildSmallFilterChip(context, 'Egresos', TreasuryFilter.expense),
+                  ],
+                ),
               ),
             ],
           ),
-          const SizedBox(height: 10),
+          const SizedBox(height: 12),
 
           // 5. Lista de transacciones
           if (filteredList.isEmpty)
@@ -466,7 +476,7 @@ class TreasuryDashboardScreen extends StatelessWidget {
                   ),
                 )),
 
-          const SizedBox(height: 30),
+          const SizedBox(height: 48),
         ],
       ),
     );

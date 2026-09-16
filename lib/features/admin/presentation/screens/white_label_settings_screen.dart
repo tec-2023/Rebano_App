@@ -6,6 +6,8 @@ import '../../../../core/widgets/app_logo.dart';
 import '../../../../core/widgets/custom_card.dart';
 import '../../../../core/widgets/custom_text_field.dart';
 import '../../../tenant/presentation/providers/tenant_provider.dart';
+import '../../../auth/presentation/providers/auth_provider.dart';
+import '../../../auth/presentation/screens/welcome_screen.dart';
 
 class WhiteLabelSettingsScreen extends StatefulWidget {
   const WhiteLabelSettingsScreen({super.key});
@@ -17,6 +19,7 @@ class WhiteLabelSettingsScreen extends StatefulWidget {
 class _WhiteLabelSettingsScreenState extends State<WhiteLabelSettingsScreen> {
   final _formKey = GlobalKey<FormState>();
   late TextEditingController _nameController;
+  late TextEditingController _shortNameController;
   late TextEditingController _addressController;
   late TextEditingController _phoneController;
   late Color _selectedColor;
@@ -27,6 +30,7 @@ class _WhiteLabelSettingsScreenState extends State<WhiteLabelSettingsScreen> {
     super.initState();
     final tenant = context.read<TenantProvider>().currentTenant;
     _nameController = TextEditingController(text: tenant.name);
+    _shortNameController = TextEditingController(text: tenant.shortName);
     _addressController = TextEditingController(text: tenant.address);
     _phoneController = TextEditingController(text: tenant.phone);
     _selectedColor = tenant.primaryColor;
@@ -35,6 +39,7 @@ class _WhiteLabelSettingsScreenState extends State<WhiteLabelSettingsScreen> {
   @override
   void dispose() {
     _nameController.dispose();
+    _shortNameController.dispose();
     _addressController.dispose();
     _phoneController.dispose();
     super.dispose();
@@ -48,6 +53,7 @@ class _WhiteLabelSettingsScreenState extends State<WhiteLabelSettingsScreen> {
 
     final success = await tenant.updateCustomization(
       name: _nameController.text.trim(),
+      shortName: _shortNameController.text.trim(),
       primaryColor: _selectedColor,
     );
 
@@ -125,15 +131,32 @@ class _WhiteLabelSettingsScreenState extends State<WhiteLabelSettingsScreen> {
                 ),
                 const SizedBox(height: 20),
 
+                // 1. Nombre Completo Oficial
                 CustomTextField(
                   controller: _nameController,
-                  label: 'Nombre de la Congregación',
-                  hint: 'Ej. Comunidad Cristiana Gracia y Paz',
+                  label: 'Nombre Oficial / Completo de la Congregación',
+                  hint: 'Ej. Iglesia Bautista Fundamental Independiente El Alfarero',
                   prefixIcon: Icons.church_outlined,
                   textCapitalization: TextCapitalization.words,
                   validator: (val) {
                     if (val == null || val.trim().isEmpty) {
-                      return 'Ingresa el nombre de la iglesia';
+                      return 'Ingresa el nombre oficial de la iglesia';
+                    }
+                    return null;
+                  },
+                ),
+                const SizedBox(height: 16),
+
+                // 2. Nombre Corto / Distintivo
+                CustomTextField(
+                  controller: _shortNameController,
+                  label: 'Nombre Corto / Conocido (Para títulos y menús)',
+                  hint: 'Ej. El Alfarero',
+                  prefixIcon: Icons.bookmark_border_rounded,
+                  textCapitalization: TextCapitalization.words,
+                  validator: (val) {
+                    if (val == null || val.trim().isEmpty) {
+                      return 'Ingresa el nombre corto distintivo';
                     }
                     return null;
                   },
@@ -143,7 +166,7 @@ class _WhiteLabelSettingsScreenState extends State<WhiteLabelSettingsScreen> {
                 CustomTextField(
                   controller: _addressController,
                   label: 'Dirección del Santuario Principal',
-                  hint: 'Calle y número, colonia, ciudad',
+                  hint: 'Costado Oeste del Parque Central, Managua, Nicaragua',
                   prefixIcon: Icons.location_on_outlined,
                 ),
                 const SizedBox(height: 16),
@@ -151,7 +174,7 @@ class _WhiteLabelSettingsScreenState extends State<WhiteLabelSettingsScreen> {
                 CustomTextField(
                   controller: _phoneController,
                   label: 'Teléfono de Contacto Pastoral',
-                  hint: '+52 55 1234 5678',
+                  hint: '+505 2222 3456',
                   prefixIcon: Icons.phone_outlined,
                   keyboardType: TextInputType.phone,
                 ),
@@ -180,6 +203,7 @@ class _WhiteLabelSettingsScreenState extends State<WhiteLabelSettingsScreen> {
                         // Aplicamos el cambio en vivo
                         tenantProvider.updateCustomization(
                           name: _nameController.text.trim(),
+                          shortName: _shortNameController.text.trim(),
                           primaryColor: preset.primaryColor,
                         );
                       },
@@ -202,7 +226,6 @@ class _WhiteLabelSettingsScreenState extends State<WhiteLabelSettingsScreen> {
                               height: 22,
                               decoration: BoxDecoration(
                                 color: preset.primaryColor,
-                                shape: BoxShape.circle,
                               ),
                               child: isSelected
                                   ? const Icon(Icons.check, size: 14, color: Colors.white)
@@ -245,10 +268,198 @@ class _WhiteLabelSettingsScreenState extends State<WhiteLabelSettingsScreen> {
                   customColor: _selectedColor,
                   icon: Icons.save_rounded,
                 ),
-                const SizedBox(height: 20),
+                const SizedBox(height: 36),
+
+                // 5. Zona de Peligro: Eliminar Congregación
+                CustomCard(
+                  padding: const EdgeInsets.all(18),
+                  color: const Color(0xFFFEE2E2).withValues(alpha: isDark ? 0.2 : 0.8),
+                  border: Border.all(color: const Color(0xFFF87171)),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Row(
+                        children: [
+                          Icon(Icons.warning_amber_rounded, color: Color(0xFFDC2626), size: 22),
+                          SizedBox(width: 8),
+                          Text(
+                            'ZONA DE PELIGRO',
+                            style: TextStyle(
+                              color: Color(0xFFDC2626),
+                              fontWeight: FontWeight.bold,
+                              fontSize: 13,
+                              letterSpacing: 0.8,
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 8),
+                      const Text(
+                        'Eliminar Congregación',
+                        style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        'Si esta congregación cerró o deseas eliminar permanentemente todos los registros y datos de este tenant, puedes borrarla aquí.',
+                        style: TextStyle(
+                          fontSize: 12.5,
+                          color: isDark ? Colors.grey[300] : const Color(0xFF4B5563),
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+                      SizedBox(
+                        width: double.infinity,
+                        child: OutlinedButton.icon(
+                          onPressed: () => _showDeleteChurchDialog(
+                            context,
+                            tenantProvider,
+                            context.read<AuthProvider>(),
+                          ),
+                          icon: const Icon(Icons.delete_forever_rounded, color: Color(0xFFDC2626)),
+                          label: const Text(
+                            'Eliminar Iglesia Permanentemente',
+                            style: TextStyle(color: Color(0xFFDC2626), fontWeight: FontWeight.bold),
+                          ),
+                          style: OutlinedButton.styleFrom(
+                            side: const BorderSide(color: Color(0xFFDC2626)),
+                            padding: const EdgeInsets.symmetric(vertical: 12),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 40),
               ],
             ),
           ),
+        ),
+      ),
+    );
+  }
+
+  void _showDeleteChurchDialog(
+    BuildContext context,
+    TenantProvider tenant,
+    AuthProvider auth,
+  ) {
+    final churchName = tenant.churchName;
+    final confirmController = TextEditingController();
+    bool isDeleting = false;
+
+    showDialog(
+      context: context,
+      builder: (dialogCtx) => StatefulBuilder(
+        builder: (ctx, setDialogState) => AlertDialog(
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+          title: const Row(
+            children: [
+              Icon(Icons.warning_amber_rounded, color: Color(0xFFDC2626), size: 28),
+              SizedBox(width: 8),
+              Expanded(
+                child: Text(
+                  '¿Eliminar Iglesia?',
+                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Color(0xFFDC2626)),
+                ),
+              ),
+            ],
+          ),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Text(
+                'Esta acción es IRREVERSIBLE. Se eliminará la congregación y se desvinculará a todos los miembros y registros.',
+                style: TextStyle(fontSize: 13.5, color: Color(0xFFDC2626), fontWeight: FontWeight.w600),
+              ),
+              const SizedBox(height: 14),
+              RichText(
+                text: TextSpan(
+                  style: TextStyle(
+                    fontSize: 13,
+                    color: Theme.of(context).brightness == Brightness.dark ? Colors.white70 : Colors.black87,
+                  ),
+                  children: [
+                    const TextSpan(text: 'Para confirmar, escribe el nombre exacto de la iglesia:\n"'),
+                    TextSpan(
+                      text: churchName,
+                      style: const TextStyle(fontWeight: FontWeight.bold, color: Color(0xFFDC2626)),
+                    ),
+                    const TextSpan(text: '"'),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 12),
+              TextField(
+                controller: confirmController,
+                decoration: const InputDecoration(
+                  hintText: 'Escribe el nombre aquí...',
+                  border: OutlineInputBorder(),
+                ),
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: isDeleting ? null : () => Navigator.of(dialogCtx).pop(),
+              child: const Text('Cancelar'),
+            ),
+            ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFFDC2626),
+                foregroundColor: Colors.white,
+              ),
+              onPressed: isDeleting
+                  ? null
+                  : () async {
+                      if (confirmController.text.trim() != churchName.trim()) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                            content: Text('El nombre ingresado no coincide con la congregación'),
+                            backgroundColor: Color(0xFFDC2626),
+                          ),
+                        );
+                        return;
+                      }
+
+                      setDialogState(() => isDeleting = true);
+                      final deleted = await tenant.deleteChurch();
+                      if (deleted) {
+                        await auth.logout();
+                        if (context.mounted) {
+                          Navigator.of(dialogCtx).pop();
+                          Navigator.of(context).pushAndRemoveUntil(
+                            MaterialPageRoute(builder: (_) => const WelcomeScreen()),
+                            (route) => false,
+                          );
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(
+                              content: Text('La congregación ha sido eliminada permanentemente.'),
+                              backgroundColor: Color(0xFF15803D),
+                            ),
+                          );
+                        }
+                      } else {
+                        setDialogState(() => isDeleting = false);
+                        if (context.mounted) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: Text(tenant.errorMessage ?? 'Error al eliminar la iglesia'),
+                              backgroundColor: const Color(0xFFDC2626),
+                            ),
+                          );
+                        }
+                      }
+                    },
+              child: isDeleting
+                  ? const SizedBox(
+                      width: 16,
+                      height: 16,
+                      child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
+                    )
+                  : const Text('Eliminar Definitivamente'),
+            ),
+          ],
         ),
       ),
     );

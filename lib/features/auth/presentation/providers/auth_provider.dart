@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../../../core/config/supabase_config.dart';
+import '../../../../core/utils/error_translator.dart';
 import '../../domain/entities/app_user.dart';
 import '../../domain/entities/user_role.dart';
 import '../../data/repositories/mock_auth_repository.dart';
@@ -38,9 +39,9 @@ class AuthProvider extends ChangeNotifier {
       id: 'user-1',
       churchId: 'tenant-1',
       name: 'Pastor David Morales',
-      email: 'pastor@graciaypaz.org',
+      email: 'pastor@elalfarero.org',
       roles: const [UserRole.admin, UserRole.member],
-      phone: '+52 81 8000 1111',
+      phone: '+505 8888 1111',
       joinedAt: DateTime(2024, 1, 10),
     );
     _loadChurchMembers('tenant-1');
@@ -79,7 +80,7 @@ class AuthProvider extends ChangeNotifier {
       notifyListeners();
       return user != null;
     } catch (e) {
-      _errorMessage = 'Credenciales inválidas: $e';
+      _errorMessage = ErrorTranslator.translate(e);
       _isLoading = false;
       notifyListeners();
       return false;
@@ -109,7 +110,7 @@ class AuthProvider extends ChangeNotifier {
       notifyListeners();
       return true;
     } catch (e) {
-      _errorMessage = 'Error en el registro del Pastor: $e';
+      _errorMessage = ErrorTranslator.translate(e);
       _isLoading = false;
       notifyListeners();
       return false;
@@ -139,7 +140,7 @@ class AuthProvider extends ChangeNotifier {
       notifyListeners();
       return true;
     } catch (e) {
-      _errorMessage = 'Error en el registro de miembro: $e';
+      _errorMessage = ErrorTranslator.translate(e);
       _isLoading = false;
       notifyListeners();
       return false;
@@ -193,6 +194,39 @@ class AuthProvider extends ChangeNotifier {
     } catch (e) {
       _errorMessage = 'No se pudieron actualizar los roles: $e';
       notifyListeners();
+    }
+  }
+
+  Future<bool> updateUserProfile({
+    required String name,
+    String? phone,
+    String? newPassword,
+  }) async {
+    if (_currentUser == null) return false;
+    _isLoading = true;
+    _errorMessage = null;
+    notifyListeners();
+
+    try {
+      final updated = await _repository.updateUserProfile(
+        userId: _currentUser!.id,
+        name: name,
+        phone: phone,
+        newPassword: newPassword,
+      );
+      _currentUser = updated;
+      final index = _churchMembers.indexWhere((m) => m.id == updated.id);
+      if (index != -1) {
+        _churchMembers[index] = updated;
+      }
+      _isLoading = false;
+      notifyListeners();
+      return true;
+    } catch (e) {
+      _errorMessage = 'Error al actualizar perfil: $e';
+      _isLoading = false;
+      notifyListeners();
+      return false;
     }
   }
 

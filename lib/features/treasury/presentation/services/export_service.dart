@@ -26,7 +26,7 @@ class ExportService {
         'Fecha',
         'Tipo',
         'Categoría',
-        'Monto (\$)',
+        'Monto (C\$ Córdobas)',
         'Donante / Beneficiario',
         'Descripción',
         'Tiene Comprobante / Recibo',

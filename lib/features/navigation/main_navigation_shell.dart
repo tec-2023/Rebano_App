@@ -6,6 +6,7 @@ import '../tenant/presentation/providers/tenant_provider.dart';
 import '../auth/domain/entities/user_role.dart';
 import '../auth/presentation/providers/auth_provider.dart';
 import '../auth/presentation/screens/welcome_screen.dart';
+import '../auth/presentation/screens/user_profile_screen.dart';
 import '../prayer_network/presentation/screens/prayer_feed_screen.dart';
 import '../cells_evangelism/presentation/screens/cell_overview_screen.dart';
 import '../treasury/presentation/screens/treasury_dashboard_screen.dart';
@@ -96,17 +97,21 @@ class _MainNavigationShellState extends State<MainNavigationShell> {
       drawer: _buildDrawer(context, tenant, auth),
       body: currentScreen,
       bottomNavigationBar: availableDestinations.length > 1
-          ? BottomNavigationBar(
-              currentIndex: _currentIndex,
-              onTap: (idx) => setState(() => _currentIndex = idx),
-              selectedItemColor: tenant.primaryColor,
-              items: availableDestinations.map((dest) {
-                return BottomNavigationBarItem(
-                  icon: Icon(dest.icon),
-                  activeIcon: Icon(dest.activeIcon),
-                  label: dest.label,
-                );
-              }).toList(),
+          ? SafeArea(
+              top: false,
+              bottom: true,
+              child: BottomNavigationBar(
+                currentIndex: _currentIndex,
+                onTap: (idx) => setState(() => _currentIndex = idx),
+                selectedItemColor: tenant.primaryColor,
+                items: availableDestinations.map((dest) {
+                  return BottomNavigationBarItem(
+                    icon: Icon(dest.icon),
+                    activeIcon: Icon(dest.activeIcon),
+                    label: dest.label,
+                  );
+                }).toList(),
+              ),
             )
           : null,
     );
@@ -146,7 +151,7 @@ class _MainNavigationShellState extends State<MainNavigationShell> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            tenant.churchName,
+                            tenant.shortName,
                             style: const TextStyle(
                               color: Colors.white,
                               fontWeight: FontWeight.bold,
@@ -156,10 +161,20 @@ class _MainNavigationShellState extends State<MainNavigationShell> {
                             overflow: TextOverflow.ellipsis,
                           ),
                           Text(
-                            'Código: ${tenant.churchCode}',
+                            tenant.churchName,
                             style: const TextStyle(
                               color: Colors.white70,
-                              fontSize: 12.5,
+                              fontSize: 11.5,
+                              fontWeight: FontWeight.w500,
+                            ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                          Text(
+                            'Código: ${tenant.churchCode}',
+                            style: const TextStyle(
+                              color: Colors.white60,
+                              fontSize: 11,
                               fontWeight: FontWeight.w600,
                             ),
                           ),
@@ -169,34 +184,47 @@ class _MainNavigationShellState extends State<MainNavigationShell> {
                   ],
                 ),
                 const SizedBox(height: 14),
-                Row(
-                  children: [
-                    CircleAvatar(
-                      radius: 12,
-                      backgroundColor: Colors.white,
-                      child: Text(
-                        (user?.name.isNotEmpty ?? false) ? user!.name[0] : 'U',
-                        style: TextStyle(
-                          fontSize: 11,
-                          fontWeight: FontWeight.bold,
-                          color: tenant.primaryColor,
+                InkWell(
+                  onTap: () {
+                    Navigator.of(context).pop();
+                    Navigator.of(context).push(
+                      MaterialPageRoute(builder: (_) => const UserProfileScreen()),
+                    );
+                  },
+                  borderRadius: BorderRadius.circular(8),
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 4, horizontal: 2),
+                    child: Row(
+                      children: [
+                        CircleAvatar(
+                          radius: 13,
+                          backgroundColor: Colors.white,
+                          child: Text(
+                            (user?.name.isNotEmpty ?? false) ? user!.name[0] : 'U',
+                            style: TextStyle(
+                              fontSize: 11,
+                              fontWeight: FontWeight.bold,
+                              color: tenant.primaryColor,
+                            ),
+                          ),
                         ),
-                      ),
-                    ),
-                    const SizedBox(width: 8),
-                    Expanded(
-                      child: Text(
-                        user?.name ?? 'Usuario',
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontSize: 13.5,
-                          fontWeight: FontWeight.w600,
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: Text(
+                            user?.name ?? 'Usuario',
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 13.5,
+                              fontWeight: FontWeight.w600,
+                            ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
                         ),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                      ),
+                        const Icon(Icons.edit_outlined, color: Colors.white70, size: 16),
+                      ],
                     ),
-                  ],
+                  ),
                 ),
               ],
             ),
@@ -283,7 +311,21 @@ class _MainNavigationShellState extends State<MainNavigationShell> {
           ),
           const SizedBox(height: 8),
 
-          // 4. Módulos de Administración (Solo si es Admin)
+          // 4. Perfil Personal del Usuario
+          ListTile(
+            leading: const Icon(Icons.person_pin_outlined, color: Color(0xFF0D9488)),
+            title: const Text('Mi Perfil de Usuario'),
+            subtitle: const Text('Editar nombre, teléfono y contraseña'),
+            onTap: () {
+              Navigator.of(context).pop();
+              Navigator.of(context).push(
+                MaterialPageRoute(builder: (_) => const UserProfileScreen()),
+              );
+            },
+          ),
+          const Divider(),
+
+          // 5. Módulos de Administración (Solo si es Admin)
           if (user?.isAdmin ?? false) ...[
             ListTile(
               leading: const Icon(Icons.palette_outlined, color: Color(0xFF7C3AED)),
@@ -358,11 +400,12 @@ class _MainNavigationShellState extends State<MainNavigationShell> {
             onTap: () {
               auth.logout();
               Navigator.of(context).pushAndRemoveUntil(
-                MaterialPageRoute(builder: (_) => const WelcomeScreen()),
+                 MaterialPageRoute(builder: (_) => const WelcomeScreen()),
                 (route) => false,
               );
             },
           ),
+          SizedBox(height: MediaQuery.paddingOf(context).bottom + 20),
         ],
       ),
     );

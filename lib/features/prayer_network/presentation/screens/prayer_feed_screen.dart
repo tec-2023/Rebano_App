@@ -168,7 +168,7 @@ class PrayerFeedScreen extends StatelessWidget {
             else
               ...filteredList.map((item) => _buildPrayerCard(context, item)),
 
-            const SizedBox(height: 80),
+            const SizedBox(height: 96),
           ],
         ),
       ),

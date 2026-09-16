@@ -2,10 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/widgets/app_button.dart';
+import '../../../../core/widgets/app_snackbar.dart';
 import '../../../../core/widgets/custom_text_field.dart';
 import '../../../tenant/presentation/providers/tenant_provider.dart';
 import '../providers/auth_provider.dart';
 import 'church_created_success_screen.dart';
+import 'login_screen.dart';
 
 class RegisterChurchScreen extends StatefulWidget {
   const RegisterChurchScreen({super.key});
@@ -16,17 +18,20 @@ class RegisterChurchScreen extends StatefulWidget {
 
 class _RegisterChurchScreenState extends State<RegisterChurchScreen> {
   final _formKey = GlobalKey<FormState>();
-  final _churchNameController = TextEditingController();
+  final _churchFullNameController = TextEditingController();
+  final _churchShortNameController = TextEditingController();
   final _pastorNameController = TextEditingController();
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
 
   Color _selectedPrimaryColor = AppColors.themePresets.first.primaryColor;
   bool _isLoading = false;
+  bool _obscurePassword = true;
 
   @override
   void dispose() {
-    _churchNameController.dispose();
+    _churchFullNameController.dispose();
+    _churchShortNameController.dispose();
     _pastorNameController.dispose();
     _emailController.dispose();
     _passwordController.dispose();
@@ -41,9 +46,12 @@ class _RegisterChurchScreenState extends State<RegisterChurchScreen> {
     final tenantProvider = context.read<TenantProvider>();
     final authProvider = context.read<AuthProvider>();
 
-    // 1. Registramos la iglesia y generamos su código
+    // 1. Registramos la iglesia con nombre largo y nombre corto
     final newChurch = await tenantProvider.registerChurch(
-      name: _churchNameController.text.trim(),
+      name: _churchFullNameController.text.trim(),
+      shortName: _churchShortNameController.text.trim().isNotEmpty
+          ? _churchShortNameController.text.trim()
+          : null,
       pastorName: _pastorNameController.text.trim(),
       email: _emailController.text.trim(),
       primaryColor: _selectedPrimaryColor,
@@ -51,7 +59,7 @@ class _RegisterChurchScreenState extends State<RegisterChurchScreen> {
 
     if (newChurch != null) {
       // 2. Registramos al Pastor como Administrador de este Tenant
-      await authProvider.registerAdmin(
+      final success = await authProvider.registerAdmin(
         name: _pastorNameController.text.trim(),
         email: _emailController.text.trim(),
         password: _passwordController.text,
@@ -60,20 +68,39 @@ class _RegisterChurchScreenState extends State<RegisterChurchScreen> {
 
       if (mounted) {
         setState(() => _isLoading = false);
-        Navigator.of(context).pushReplacement(
-          MaterialPageRoute(
-            builder: (_) => ChurchCreatedSuccessScreen(churchTenant: newChurch),
-          ),
-        );
+        if (success) {
+          Navigator.of(context).pushReplacement(
+            MaterialPageRoute(
+              builder: (_) => ChurchCreatedSuccessScreen(churchTenant: newChurch),
+            ),
+          );
+        } else {
+          AppAlert.showError(
+            context,
+            title: 'No se pudo completar el registro',
+            message: authProvider.errorMessage ?? 'Ocurrió un error al crear tu cuenta de pastor.',
+            actionLabel: 'Iniciar Sesión',
+            onAction: () {
+              Navigator.of(context).pushReplacement(
+                MaterialPageRoute(builder: (_) => const LoginScreen()),
+              );
+            },
+          );
+        }
       }
     } else {
       if (mounted) {
         setState(() => _isLoading = false);
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(tenantProvider.errorMessage ?? 'Error al registrar iglesia'),
-            backgroundColor: AppColors.error,
-          ),
+        AppAlert.showError(
+          context,
+          title: 'Congregación no registrada',
+          message: tenantProvider.errorMessage ?? 'No se pudo crear la congregación.',
+          actionLabel: 'Iniciar Sesión',
+          onAction: () {
+            Navigator.of(context).pushReplacement(
+              MaterialPageRoute(builder: (_) => const LoginScreen()),
+            );
+          },
         );
       }
     }
@@ -107,25 +134,42 @@ class _RegisterChurchScreenState extends State<RegisterChurchScreen> {
                 ),
                 const SizedBox(height: 24),
 
-                // Campos del formulario
+                // 1. Nombre Completo Oficial
                 CustomTextField(
-                  controller: _churchNameController,
-                  label: 'Nombre de la Iglesia / Congregación',
-                  hint: 'Ej. Comunidad Cristiana Gracia y Paz',
+                  controller: _churchFullNameController,
+                  label: 'Nombre Oficial / Completo de la Iglesia',
+                  hint: 'Ej. Iglesia Bautista Fundamental Independiente El Alfarero',
                   prefixIcon: Icons.church_outlined,
                   textCapitalization: TextCapitalization.words,
                   validator: (val) {
                     if (val == null || val.trim().isEmpty) {
-                      return 'Por favor ingresa el nombre de la iglesia';
+                      return 'Por favor ingresa el nombre oficial de la iglesia';
                     }
                     return null;
                   },
                 ),
                 const SizedBox(height: 16),
 
+                // 2. Nombre Corto / Distintivo
+                CustomTextField(
+                  controller: _churchShortNameController,
+                  label: 'Nombre Corto / Conocido (Para menús y títulos)',
+                  hint: 'Ej. El Alfarero',
+                  prefixIcon: Icons.bookmark_border_rounded,
+                  textCapitalization: TextCapitalization.words,
+                  validator: (val) {
+                    if (val == null || val.trim().isEmpty) {
+                      return 'Ingresa el nombre corto (ej. El Alfarero)';
+                    }
+                    return null;
+                  },
+                ),
+                const SizedBox(height: 16),
+
+                // 3. Nombre del Pastor
                 CustomTextField(
                   controller: _pastorNameController,
-                  label: 'Nombre completo del Pastor / Líder',
+                  label: 'Nombre completo del Pastor / Administrador',
                   hint: 'Ej. Pastor David Morales',
                   prefixIcon: Icons.person_outline,
                   textCapitalization: TextCapitalization.words,
@@ -138,10 +182,11 @@ class _RegisterChurchScreenState extends State<RegisterChurchScreen> {
                 ),
                 const SizedBox(height: 16),
 
+                // 4. Correo Electrónico
                 CustomTextField(
                   controller: _emailController,
                   label: 'Correo electrónico de administración',
-                  hint: 'pastor@mi-iglesia.org',
+                  hint: 'pastor@elalfarero.org',
                   prefixIcon: Icons.email_outlined,
                   keyboardType: TextInputType.emailAddress,
                   validator: (val) {
@@ -153,12 +198,23 @@ class _RegisterChurchScreenState extends State<RegisterChurchScreen> {
                 ),
                 const SizedBox(height: 16),
 
+                // 5. Contraseña con Ojo de Visibilidad
                 CustomTextField(
                   controller: _passwordController,
                   label: 'Contraseña de acceso',
                   hint: 'Mínimo 6 caracteres',
                   prefixIcon: Icons.lock_outline,
-                  obscureText: true,
+                  obscureText: _obscurePassword,
+                  suffixIcon: IconButton(
+                    icon: Icon(
+                      _obscurePassword
+                          ? Icons.visibility_outlined
+                          : Icons.visibility_off_outlined,
+                    ),
+                    onPressed: () {
+                      setState(() => _obscurePassword = !_obscurePassword);
+                    },
+                  ),
                   validator: (val) {
                     if (val == null || val.length < 6) {
                       return 'La contraseña debe tener al menos 6 caracteres';
@@ -240,6 +296,32 @@ class _RegisterChurchScreenState extends State<RegisterChurchScreen> {
                   icon: Icons.check_circle_outline,
                 ),
                 const SizedBox(height: 20),
+
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Text(
+                      '¿Ya tienes cuenta o iglesia?',
+                      style: TextStyle(
+                        color: Theme.of(context).brightness == Brightness.dark
+                            ? Colors.grey[400]
+                            : Colors.grey[600],
+                      ),
+                    ),
+                    TextButton(
+                      onPressed: () {
+                        Navigator.of(context).pushReplacement(
+                          MaterialPageRoute(builder: (_) => const LoginScreen()),
+                        );
+                      },
+                      child: const Text(
+                        'Inicia Sesión aquí',
+                        style: TextStyle(fontWeight: FontWeight.bold),
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 32),
               ],
             ),
           ),

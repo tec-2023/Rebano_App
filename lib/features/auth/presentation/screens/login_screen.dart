@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/widgets/app_button.dart';
+import '../../../../core/widgets/app_snackbar.dart';
 import '../../../../core/widgets/custom_card.dart';
 import '../../../../core/widgets/custom_text_field.dart';
 import '../../../tenant/presentation/providers/tenant_provider.dart';
@@ -10,6 +11,7 @@ import '../../../treasury/presentation/providers/treasury_provider.dart';
 import '../../../cells_evangelism/presentation/providers/cell_provider.dart';
 import '../providers/auth_provider.dart';
 import '../../../navigation/main_navigation_shell.dart';
+import 'register_church_screen.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -20,9 +22,10 @@ class LoginScreen extends StatefulWidget {
 
 class _LoginScreenState extends State<LoginScreen> {
   final _formKey = GlobalKey<FormState>();
-  final _emailController = TextEditingController(text: 'pastor@graciaypaz.org');
-  final _passwordController = TextEditingController(text: '123456');
+  final _emailController = TextEditingController();
+  final _passwordController = TextEditingController();
   bool _isLoading = false;
+  bool _obscurePassword = true;
 
   @override
   void dispose() {
@@ -58,17 +61,21 @@ class _LoginScreenState extends State<LoginScreen> {
         }
 
         if (mounted) {
+          AppAlert.showSuccess(
+            context,
+            title: '¡Bienvenido!',
+            message: 'Has iniciado sesión correctamente.',
+          );
           Navigator.of(context).pushAndRemoveUntil(
             MaterialPageRoute(builder: (_) => const MainNavigationShell()),
             (route) => false,
           );
         }
       } else {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(authProvider.errorMessage ?? 'Error al iniciar sesión'),
-            backgroundColor: AppColors.error,
-          ),
+        AppAlert.showError(
+          context,
+          title: 'Credenciales Incorrectas',
+          message: authProvider.errorMessage ?? 'No pudimos verificar tus credenciales.',
         );
       }
     }
@@ -125,7 +132,17 @@ class _LoginScreenState extends State<LoginScreen> {
                       label: 'Contraseña',
                       hint: '••••••••',
                       prefixIcon: Icons.lock_outline,
-                      obscureText: true,
+                      obscureText: _obscurePassword,
+                      suffixIcon: IconButton(
+                        icon: Icon(
+                          _obscurePassword
+                              ? Icons.visibility_outlined
+                              : Icons.visibility_off_outlined,
+                        ),
+                        onPressed: () {
+                          setState(() => _obscurePassword = !_obscurePassword);
+                        },
+                      ),
                       validator: (val) {
                         if (val == null || val.length < 6) {
                           return 'Mínimo 6 caracteres';
@@ -141,11 +158,37 @@ class _LoginScreenState extends State<LoginScreen> {
                       isLoading: _isLoading,
                       icon: Icons.login_rounded,
                     ),
+                    const SizedBox(height: 16),
+
+                    // Enlaces de navegación a registro o unirse
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Text(
+                          '¿No tienes iglesia registrada?',
+                          style: TextStyle(
+                            color: isDark ? Colors.grey[400] : Colors.grey[600],
+                            fontSize: 13,
+                          ),
+                        ),
+                        TextButton(
+                          onPressed: () {
+                            Navigator.of(context).pushReplacement(
+                              MaterialPageRoute(builder: (_) => const RegisterChurchScreen()),
+                            );
+                          },
+                          child: const Text(
+                            'Registrar aquí',
+                            style: TextStyle(fontWeight: FontWeight.bold),
+                          ),
+                        ),
+                      ],
+                    ),
                   ],
                 ),
               ),
 
-              const SizedBox(height: 32),
+              const SizedBox(height: 28),
 
               // Sección Cuentas Demo Rápidas
               Row(
@@ -172,7 +215,7 @@ class _LoginScreenState extends State<LoginScreen> {
                 title: 'Pastor David Morales',
                 roleBadge: 'Admin / Pastor',
                 roleColor: AppColors.roleAdmin,
-                email: 'pastor@graciaypaz.org',
+                email: 'pastor@elalfarero.org',
                 description: 'Acceso total a Todos los Módulos, Tesorería, Células y White-label.',
                 icon: Icons.admin_panel_settings_rounded,
               ),
@@ -182,7 +225,7 @@ class _LoginScreenState extends State<LoginScreen> {
                 title: 'Carlos Mendoza',
                 roleBadge: 'Tesorero + Líder Célula',
                 roleColor: AppColors.roleTreasurer,
-                email: 'carlos.tesorero@graciaypaz.org',
+                email: 'carlos.tesorero@elalfarero.org',
                 description: 'Acceso a Módulo de Tesorería, Células, Asistencia y Oración.',
                 icon: Icons.account_balance_wallet_rounded,
               ),
@@ -192,7 +235,7 @@ class _LoginScreenState extends State<LoginScreen> {
                 title: 'María Fernanda Ríos',
                 roleBadge: 'Líder de Célula',
                 roleColor: AppColors.roleLeader,
-                email: 'maria.lider@graciaypaz.org',
+                email: 'maria.lider@elalfarero.org',
                 description: 'Acceso a Asistencia de Célula, Mapa de Evangelismo y Oración.',
                 icon: Icons.groups_rounded,
               ),
@@ -202,11 +245,11 @@ class _LoginScreenState extends State<LoginScreen> {
                 title: 'Juan Silva',
                 roleBadge: 'Miembro',
                 roleColor: AppColors.roleMember,
-                email: 'juan.miembro@graciaypaz.org',
+                email: 'juan.miembro@elalfarero.org',
                 description: 'Acceso a Red de Oración, peticiones y muro congregacional.',
                 icon: Icons.person_rounded,
               ),
-              const SizedBox(height: 24),
+              const SizedBox(height: 36),
             ],
           ),
         ),
@@ -225,6 +268,7 @@ class _LoginScreenState extends State<LoginScreen> {
     return CustomCard(
       onTap: () {
         _emailController.text = email;
+        _passwordController.text = '123456';
         _handleLogin(email: email, password: 'password123');
       },
       padding: const EdgeInsets.all(14),

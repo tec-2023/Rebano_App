@@ -2,8 +2,9 @@ import 'package:flutter/material.dart';
 
 class ChurchTenant {
   final String id;
-  final String name;
-  final String code; // Ej: REB-1054
+  final String name; // Nombre Completo u Oficial (ej. Iglesia Bautista Fundamental Independiente El Alfarero)
+  final String shortName; // Nombre Corto / Distintivo (ej. El Alfarero)
+  final String code; // Ej: IBFIEA-150926
   final String pastorName;
   final String email;
   final Color primaryColor;
@@ -16,20 +17,24 @@ class ChurchTenant {
   const ChurchTenant({
     required this.id,
     required this.name,
+    this.shortName = '',
     required this.code,
     required this.pastorName,
     required this.email,
     required this.primaryColor,
     this.logoUrl,
     this.motto,
-    this.address = 'Calle Principal #123, Colonia Centro',
-    this.phone = '+52 55 1234 5678',
+    this.address = 'Costado Oeste del Parque Central, Managua, Nicaragua',
+    this.phone = '+505 2222 3456',
     required this.createdAt,
   });
+
+  String get displayName => shortName.trim().isNotEmpty ? shortName.trim() : name;
 
   ChurchTenant copyWith({
     String? id,
     String? name,
+    String? shortName,
     String? code,
     String? pastorName,
     String? email,
@@ -43,6 +48,7 @@ class ChurchTenant {
     return ChurchTenant(
       id: id ?? this.id,
       name: name ?? this.name,
+      shortName: shortName ?? this.shortName,
       code: code ?? this.code,
       pastorName: pastorName ?? this.pastorName,
       email: email ?? this.email,

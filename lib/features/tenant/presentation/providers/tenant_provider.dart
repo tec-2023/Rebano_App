@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../../../core/config/supabase_config.dart';
+import '../../../../core/utils/error_translator.dart';
 import '../../domain/entities/church_tenant.dart';
 import '../../data/repositories/mock_tenant_repository.dart';
 import '../../data/repositories/supabase_tenant_repository.dart';
@@ -18,19 +19,21 @@ class TenantProvider extends ChangeNotifier {
                 : MockTenantRepository()),
         _currentTenant = ChurchTenant(
           id: 'tenant-1',
-          name: 'Comunidad Gracia y Paz',
-          code: 'REB-1054',
+          name: 'Iglesia Bautista Fundamental Independiente El Alfarero',
+          shortName: 'El Alfarero',
+          code: 'IBFIEA-150926',
           pastorName: 'Pastor David Morales',
-          email: 'pastor.david@graciaypaz.org',
+          email: 'pastor.david@elalfarero.org',
           primaryColor: const Color(0xFF1E5BB8),
-          address: 'Av. Esperanza #400, Monterrey, N.L.',
-          phone: '+52 81 8300 1234',
+          address: 'Costado Oeste del Parque Central, Managua, Nicaragua',
+          phone: '+505 2222 3456',
           createdAt: DateTime(2025, 1, 1),
         );
 
   ChurchTenant get currentTenant => _currentTenant;
   Color get primaryColor => _currentTenant.primaryColor;
   String get churchName => _currentTenant.name;
+  String get shortName => _currentTenant.displayName;
   String get churchCode => _currentTenant.code;
   String? get logoUrl => _currentTenant.logoUrl;
   String? get motto => _currentTenant.motto;
@@ -89,7 +92,7 @@ class TenantProvider extends ChangeNotifier {
         return false;
       }
     } catch (e) {
-      _errorMessage = 'Error de conexión: ${e.toString()}';
+      _errorMessage = ErrorTranslator.translate(e);
       _isLoading = false;
       notifyListeners();
       return false;
@@ -98,6 +101,7 @@ class TenantProvider extends ChangeNotifier {
 
   Future<ChurchTenant?> registerChurch({
     required String name,
+    String? shortName,
     required String pastorName,
     required String email,
     required Color primaryColor,
@@ -109,6 +113,7 @@ class TenantProvider extends ChangeNotifier {
     try {
       final newChurch = await _repository.registerChurch(
         name: name,
+        shortName: shortName,
         pastorName: pastorName,
         email: email,
         primaryColor: primaryColor,
@@ -118,7 +123,7 @@ class TenantProvider extends ChangeNotifier {
       notifyListeners();
       return newChurch;
     } catch (e) {
-      _errorMessage = 'Error al registrar la congregación: $e';
+      _errorMessage = ErrorTranslator.translate(e);
       _isLoading = false;
       notifyListeners();
       return null;
@@ -127,6 +132,7 @@ class TenantProvider extends ChangeNotifier {
 
   Future<bool> updateCustomization({
     required String name,
+    String? shortName,
     required Color primaryColor,
     String? logoUrl,
   }) async {
@@ -137,11 +143,13 @@ class TenantProvider extends ChangeNotifier {
       await _repository.updateChurchCustomization(
         tenantId: _currentTenant.id,
         name: name,
+        shortName: shortName,
         primaryColor: primaryColor,
         logoUrl: logoUrl,
       );
       _currentTenant = _currentTenant.copyWith(
         name: name,
+        shortName: shortName,
         primaryColor: primaryColor,
         logoUrl: logoUrl,
       );
@@ -150,6 +158,33 @@ class TenantProvider extends ChangeNotifier {
       return true;
     } catch (e) {
       _errorMessage = 'Error al actualizar personalización: $e';
+      _isLoading = false;
+      notifyListeners();
+      return false;
+    }
+  }
+
+  Future<bool> deleteChurch() async {
+    _isLoading = true;
+    _errorMessage = null;
+    notifyListeners();
+
+    try {
+      await _repository.deleteChurch(_currentTenant.id);
+      _currentTenant = ChurchTenant(
+        id: '',
+        name: 'Sin Congregación',
+        code: '',
+        pastorName: '',
+        email: '',
+        primaryColor: const Color(0xFF1E5BB8),
+        createdAt: DateTime.now(),
+      );
+      _isLoading = false;
+      notifyListeners();
+      return true;
+    } catch (e) {
+      _errorMessage = 'Error al eliminar la congregación: $e';
       _isLoading = false;
       notifyListeners();
       return false;

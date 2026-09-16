@@ -63,7 +63,7 @@ class SupabasePrayerRepository implements PrayerRepository {
       churchId: churchId,
       memberName: 'Hermana Raquel Salinas',
       role: 'Diaconisa e Intercesora',
-      phone: '+52 81 1234 9988',
+      phone: '+505 8888 9988',
       bibleVerse:
           'Confesaos vuestras ofensas unos a otros, y orad unos por otros, para que seáis sanados. La oración eficaz del justo puede mucho.',
       scriptureReference: 'Santiago 5:16',
